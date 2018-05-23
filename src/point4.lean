@@ -1,4 +1,6 @@
 import definitions 
+import data.nat.gcd 
+import mathlib_someday 
 
 lemma point_4_aux (m : ℕ) : 
 (luc (m + 3) = 2 * fib (m + 3) + fib m) ∧ (luc (m + 4) = 2 * fib (m + 4) + fib (m + 1)) :=
@@ -16,18 +18,13 @@ begin
   }
 end
 
-lemma point_4_part_a (m : ℕ) : luc (m + 3) = 2 * fib (m + 3) + fib m := (aux m).left 
+lemma point_4_part_a (m : ℕ) : luc (m + 3) = 2 * fib (m + 3) + fib m := (point_4_aux m).left 
 
 open nat
 
 #check gcd_rec 
 
-lemma nat.gcd_aux (a b : ℕ) : gcd (a + b) b = gcd a b := 
-calc gcd (a + b) b = gcd b (a + b) : gcd_comm _ _
-...                = gcd ((a + b) % b) b : gcd_rec _ _
-...                = gcd (a % b) b : by simp
-...                = gcd b a : (gcd_rec _ _).symm 
-...                = gcd a b : gcd_comm _ _
+
  
 lemma point_4_part_b (m : ℕ) : nat.gcd (fib (m + 1)) (fib m) = 1 := 
 begin
@@ -37,8 +34,23 @@ begin
   },
   { -- inductive step
     show nat.gcd (fib d + fib (d + 1)) (fib (d + 1)) = 1,    
-    rwa [nat.gcd_aux,gcd_comm]
+    rwa [nat.gcd_add,gcd_comm]
   }
 end 
 
--- TODO -- gcd fib and luc is 1 or 2
+#check nat.gcd
+lemma point_4_part_c (m : ℕ) : gcd (fib m) (luc m) = 1 ∨ gcd (fib m) (luc m) = 2 :=
+begin
+cases m with m,right,exact dec_trivial,
+cases m with m,left,exact dec_trivial,
+cases m with m,left,exact dec_trivial,
+show gcd (fib (m + 3)) (luc (m + 3)) = 1 ∨
+    gcd (fib (m + 3)) (luc (m + 3)) = 2,
+rw point_4_part_a,
+rw [gcd_rec,
+show gcd ((fib m) % fib (m + 3)) (fib (m + 3)) = 1 ∨
+    gcd ((2 * fib (m + 3) + fib m) % fib (m + 3)) (fib (m + 3)) = 2,
+
+-- unfinished
+end 
+
