@@ -12,12 +12,14 @@ lemma αβsum : α + β = 1 := begin
   norm_num, -- ;-)
 end 
 
+/-
 lemma αβprod : α * β = -1 := begin
   unfold β,
   unfold α,
   rw [mul_sub,mul_one,add_div,mul_add,add_mul,add_mul], -- meh 
   sorry -- :-)
 end
+-/
 
 def fib : ℕ → ℕ
 | 0 := 0
