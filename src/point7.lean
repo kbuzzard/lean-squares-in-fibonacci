@@ -1,6 +1,4 @@
 import definitions
-import data.nat.gcd
-import mathlib_someday
 import point4
 
 theorem fib_add (m n : ℕ) : fib (m + n + 1) =

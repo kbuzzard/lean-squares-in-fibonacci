@@ -1,6 +1,4 @@
-import definitions 
-import data.nat.gcd
-import mathlib_someday 
+import definitions
 import data.nat.prime
 
 open nat
