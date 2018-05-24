@@ -6,6 +6,21 @@ noncomputable theory
 def α := (real.sqrt 5 + 1) / 2
 def β := 1 - α 
 
+lemma αβsum : α + β = 1 := begin
+  unfold β,
+  unfold α,
+  norm_num, -- ;-)
+end 
+
+/-
+lemma αβprod : α * β = -1 := begin
+  unfold β,
+  unfold α,
+  rw [mul_sub,mul_one,add_div,mul_add,add_mul,add_mul], -- meh 
+  sorry -- :-)
+end
+-/
+
 def fib : ℕ → ℕ
 | 0 := 0
 | 1 := 1
@@ -30,3 +45,10 @@ protected def nat.rec_on_two {C : ℕ → Sort*} (n : ℕ)
 nat.strong_induction_on n $ λ n, nat.cases_on n (λ _, H0) $
 λ n, nat.cases_on n (λ _, H1) $ λ n ih2, ih n (ih2 n $ nat.lt_succ_of_lt $ nat.le_refl _) $
 ih2 (n+1) $ nat.le_refl _
+
+-- a+b)%m = (a%m+b%m)%m
+
+def nat.mod_add (a b m : ℕ) : (a % m + b % m) % m = (a + b) % m :=
+begin
+sorry -- aarghs 
+end 
