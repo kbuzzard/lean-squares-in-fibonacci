@@ -16,12 +16,6 @@ show fib (nat.succ m) ∣ fib (nat.succ m * n + m + 1),
 by rw [fib_add]; apply dvd_add;
 [apply dvd_mul_of_dvd_left ih, apply dvd_mul_left]
 
-theorem fib_gcd_add (m n : ℕ) : nat.gcd (fib (m+n)) (fib m) = nat.gcd (fib m) (fib n) :=
-nat.cases_on n (by rw [add_zero, fib, nat.gcd_self, nat.gcd_zero_right]) $ λ n,
-by rw [nat.add_succ, nat.succ_eq_add_one, fib_add, nat.gcd_comm, nat.gcd_rec];
-rw [add_comm, nat.add_mul_mod_self_left, ← nat.gcd_rec];
-rw [nat.gcd_comm, nat.coprime.gcd_mul_left_cancel _ (fib_succ_coprime m), nat.gcd_comm]
-
 theorem fib_gcd_mod (m n : ℕ) : nat.gcd (fib m) (fib n) = nat.gcd (fib (m%n)) (fib n) :=
 nat.mod_rec n m $ λ m, show nat.gcd (fib m) (fib n) = nat.gcd (fib (m + n)) (fib n),
 from nat.cases_on n rfl $ λ n,
