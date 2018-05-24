@@ -1,6 +1,6 @@
 import definitions
 
-lemma fib_add (m n : ℕ) : 2 * fib (m + n) = fib m * luc n + luc m * fib n :=
+lemma two_mul_fib_add (m n : ℕ) : 2 * fib (m + n) = fib m * luc n + luc m * fib n :=
 nat.rec_on_two n (by rw [mul_comm]; refl)
   (nat.rec_on_two m rfl rfl $ λ n ih1 ih2,
     show 2 * (fib (n+1) + fib (nat.succ n+1))
@@ -56,11 +56,11 @@ have H : _ := luc_mul (2*n) 0,
 by simp at *; rw [← H, ← mul_assoc]; refl
 
 lemma fib_two_mul (n : ℕ) : fib (2 * n) = fib n * luc n :=
-nat.bit0_inj $ by rw [bit0, ← two_mul, two_mul n, fib_add, mul_comm]; refl
+nat.bit0_inj $ by rw [bit0, ← two_mul, two_mul n, two_mul_fib_add, mul_comm]; refl
 
 lemma luc_two_mul_dvd (m n : ℕ) : luc (2 * n) ∣ 2 * (fib (m + 4 * n) + fib m) :=
 ⟨luc (2 * n) * fib m + luc m * fib (2 * n),
-by rw [mul_add, mul_add, fib_add, mul_comm (fib m), add_right_comm, ← add_mul, luc_four_mul];
+by rw [mul_add, mul_add, two_mul_fib_add, mul_comm (fib m), add_right_comm, ← add_mul, luc_four_mul];
 conv in (4 * n) { change ((2 * 2) * n) };
 rw [mul_assoc 2, fib_two_mul]; ac_refl⟩
 
