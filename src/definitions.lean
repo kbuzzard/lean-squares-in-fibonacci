@@ -45,3 +45,10 @@ protected def nat.rec_on_two {C : ℕ → Sort*} (n : ℕ)
 nat.strong_induction_on n $ λ n, nat.cases_on n (λ _, H0) $
 λ n, nat.cases_on n (λ _, H1) $ λ n ih2, ih n (ih2 n $ nat.lt_succ_of_lt $ nat.le_refl _) $
 ih2 (n+1) $ nat.le_refl _
+
+-- a+b)%m = (a%m+b%m)%m
+
+def nat.mod_add (a b m : ℕ) : (a % m + b % m) % m = (a + b) % m :=
+begin
+sorry -- aarghs 
+end 
