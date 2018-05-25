@@ -1,5 +1,6 @@
 import analysis.real
 import tactic.norm_num 
+import data.nat.cast
 
 noncomputable theory
 
@@ -46,9 +47,21 @@ nat.strong_induction_on n $ λ n, nat.cases_on n (λ _, H0) $
 λ n, nat.cases_on n (λ _, H1) $ λ n ih2, ih n (ih2 n $ nat.lt_succ_of_lt $ nat.le_refl _) $
 ih2 (n+1) $ nat.le_refl _
 
--- a+b)%m = (a%m+b%m)%m
 
-def nat.mod_add (a b m : ℕ) : (a % m + b % m) % m = (a + b) % m :=
+theorem int.mod_add (a b m: ℤ) : (a % m + b % m) % m = (a + b) % m :=
 begin
-sorry -- aarghs 
+rw [int.mod_add_mod,add_comm,int.mod_add_mod,add_comm]
+end
+
+theorem nat.mod_add_mod : ∀ (m n k : ℕ), (m % n + k) % n = (m + k) % n :=
+begin
+intros m n k,
+apply int.of_nat_inj,
+exact int.mod_add_mod ↑m ↑n ↑k,
+end 
+
+theorem nat.mod_add (a b m : ℕ) : (a % m + b % m) % m = (a + b) % m :=
+begin
+apply int.of_nat_inj,
+exact int.mod_add ↑a ↑b ↑m,
 end 
