@@ -1,16 +1,15 @@
 import definitions 
 import data.list 
 
-#check luc
-
-#eval [luc 0,luc 1,luc 2,luc 3]
-
 definition fib_mod (m : ℕ) : ℕ → ℕ 
 | 0 := 0 % m
 | 1 := 1 % m
 | (n + 2) := ( (fib_mod n) + (fib_mod (n + 1)) ) % m
 
-example (m : ℕ) : 0 % m = 0 := _
+def luc_mod (m : ℕ) : ℕ → ℕ
+| 0 := 2 % m
+| 1 := 1 % m
+| (n + 2) := ( (luc_mod n) + (luc_mod (n + 1)) ) % m
 
 theorem fib_mod_eq (m n : ℕ) : (fib_mod m) n = (fib n) % m :=
 nat.rec_on_two n (rfl) (rfl) (begin
@@ -22,7 +21,18 @@ nat.rec_on_two n (rfl) (rfl) (begin
   exact nat.mod_add _ _ _
 end)
 
-theorem fib_mod_16 (n : ℕ) : (fib_mod 16) (n + 24) = (fib_mod 16) n :=
+theorem luc_mod_eq (m n : ℕ) : (luc_mod m) n = (luc n) % m :=
+nat.rec_on_two n (rfl) (rfl) (begin
+  intros d Hd Hdplus1,
+  unfold luc,
+  unfold luc_mod,
+  rw Hd,
+  rw Hdplus1,
+  exact nat.mod_add _ _ _
+end)
+
+
+theorem fib_mod_16_aux (n : ℕ) : (fib_mod 16) (n + 24) = (fib_mod 16) n :=
 nat.rec_on_two n (rfl) (rfl) (begin
   intros d Hd Hdplus1,
   show (fib_mod 16 (d + 24) + fib_mod 16 (nat.succ d + 24)) % 16 = 
@@ -30,29 +40,75 @@ nat.rec_on_two n (rfl) (rfl) (begin
   rw Hd,rw Hdplus1,
 end)
 
-theorem fib_mod_16' (n : ℕ) : (fib_mod 16) n = (fib_mod 16) (n % 24) := sorry
-
-#exit
-
-
-def luc_mod_2 := [0,1,1]
---theorem luc_mod_3 (m : ℕ) : (luc m) % 2 = list.nth_le luc_mod_2 (m % 3) (nat.mod_lt _ (dec_trivial)) := sorry 
-
--- this doesn't scale
-theorem luc_mod_3 (m : ℕ) :
-luc (3 * m) % 2 = 0 ∧ luc (3 * m + 1) % 2 = 1 ∧ luc (3 * m + 2) % 2 = 1 :=
+theorem fib_mod_16 (n : ℕ) : (fib_mod 16) n = (fib_mod 16) (n % 24) := 
 begin
-induction m with d Hd,
-  { -- base case
-    split,refl,split,refl,refl
+  have H : ∀ n k, fib_mod 16 (n + 24 * k) = (fib_mod 16) n,
+  { intros n k, 
+    induction k with d Hd,
+    -- base case
+    { refl},
+    -- inductive step
+    { show fib_mod 16 (n + 24 * (d + 1)) = fib_mod 16 n,
+      rwa [mul_add,←add_assoc,mul_one,fib_mod_16_aux],
+    },
   },
-  { -- inductive step
-    split,
-    { show luc (3 * (d + 1)) % 2 = 0,
-      rw [mul_add,mul_one],
-      show (luc (3 * d + 1) + luc (3 * d + 2)) % 2 = 0,
+  conv begin
+    to_lhs,
+    rw ←nat.mod_add_div n 24,
+  end,
+  rw H (n % 24) (n / 24)
+end
 
-    }
-  }
-end 
+theorem luc_mod_8_aux (n : ℕ) : (luc_mod 8) (n + 12) = (luc_mod 8) n :=
+nat.rec_on_two n (rfl) (rfl) (begin
+  intros d Hd Hdplus1,
+  show (luc_mod 8 (d + 12) + luc_mod 8 (nat.succ d + 12)) % 8 = 
+  (luc_mod 8 d + luc_mod 8 (nat.succ d)) % 8,
+  rw Hd,rw Hdplus1,
+end)
 
+theorem luc_mod_8 (n : ℕ) : (luc_mod 8) n = (luc_mod 8) (n % 12) := 
+begin
+  have H : ∀ n k, luc_mod 8 (n + 12 * k) = (luc_mod 8) n,
+  { intros n k, 
+    induction k with d Hd,
+    -- base case
+    { refl},
+    -- inductive step
+    { show luc_mod 8 (n + 12 * (d + 1)) = luc_mod 8 n,
+      rwa [mul_add,←add_assoc,mul_one,luc_mod_8_aux],
+    },
+  },
+  conv begin
+    to_lhs,
+    rw ←nat.mod_add_div n 12,
+  end,
+  rw H (n % 12) (n / 12)
+end
+
+theorem luc_mod_3_aux (n : ℕ) : (luc_mod 3) (n + 8) = (luc_mod 3) n :=
+nat.rec_on_two n (rfl) (rfl) (begin
+  intros d Hd Hdplus1,
+  show (luc_mod 3 (d + 8) + luc_mod 3 (nat.succ d + 8)) % 3 = 
+  (luc_mod 3 d + luc_mod 3 (nat.succ d)) % 3,
+  rw Hd,rw Hdplus1,
+end)
+
+theorem luc_mod_3 (n : ℕ) : (luc_mod 3) n = (luc_mod 3) (n % 8) := 
+begin
+  have H : ∀ n k, luc_mod 3 (n + 8 * k) = (luc_mod 3) n,
+  { intros n k, 
+    induction k with d Hd,
+    -- base case
+    { refl},
+    -- inductive step
+    { show luc_mod 3 (n + 8 * (d + 1)) = luc_mod 3 n,
+      rwa [mul_add,←add_assoc,mul_one,luc_mod_3_aux],
+    },
+  },
+  conv begin
+    to_lhs,
+    rw ←nat.mod_add_div n 8,
+  end,
+  rw H (n % 8) (n / 8)
+end
