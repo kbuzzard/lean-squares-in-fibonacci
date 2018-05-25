@@ -1,26 +1,5 @@
-import analysis.real
-import tactic.norm_num 
-import data.nat.cast
-
-noncomputable theory
-
-def α := (real.sqrt 5 + 1) / 2
-def β := 1 - α 
-
-lemma αβsum : α + β = 1 := begin
-  unfold β,
-  unfold α,
-  norm_num, -- ;-)
-end 
-
-/-
-lemma αβprod : α * β = -1 := begin
-  unfold β,
-  unfold α,
-  rw [mul_sub,mul_one,add_div,mul_add,add_mul,add_mul], -- meh 
-  sorry -- :-)
-end
--/
+import mathlib_someday
+import algebra.group_power
 
 def fib : ℕ → ℕ
 | 0 := 0
@@ -36,8 +15,6 @@ def luc : ℕ → ℕ
 | 1 := 1
 | (n + 2) := luc n + luc (n + 1)
 
-local attribute [elab_as_eliminator] nat.strong_induction_on
-
 @[elab_as_eliminator]
 protected def nat.rec_on_two {C : ℕ → Sort*} (n : ℕ)
   (H0 : C 0) (H1 : C 1)
@@ -46,7 +23,6 @@ protected def nat.rec_on_two {C : ℕ → Sort*} (n : ℕ)
 nat.strong_induction_on n $ λ n, nat.cases_on n (λ _, H0) $
 λ n, nat.cases_on n (λ _, H1) $ λ n ih2, ih n (ih2 n $ nat.lt_succ_of_lt $ nat.le_refl _) $
 ih2 (n+1) $ nat.le_refl _
-
 
 theorem int.mod_add (a b m: ℤ) : (a % m + b % m) % m = (a + b) % m :=
 begin
