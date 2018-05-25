@@ -112,3 +112,30 @@ begin
   end,
   rw H (n % 8) (n / 8)
 end
+
+theorem luc_mod_2_aux (n : ℕ) : (luc_mod 2) (n + 3) = (luc_mod 2) n :=
+nat.rec_on_two n (rfl) (rfl) (begin
+  intros d Hd Hdplus1,
+  show (luc_mod 2 (d + 3) + luc_mod 2 (nat.succ d + 3)) % 2 = 
+  (luc_mod 2 d + luc_mod 2 (nat.succ d)) % 2,
+  rw Hd,rw Hdplus1,
+end)
+
+theorem luc_mod_2 (n : ℕ) : (luc_mod 2) n = (luc_mod 2) (n % 3) := 
+begin
+  have H : ∀ n k, luc_mod 2 (n + 3 * k) = (luc_mod 2) n,
+  { intros n k, 
+    induction k with d Hd,
+    -- base case
+    { refl},
+    -- inductive step
+    { show luc_mod 2 (n + 3 * (d + 1)) = luc_mod 2 n,
+      rwa [mul_add,←add_assoc,mul_one,luc_mod_2_aux],
+    },
+  },
+  conv begin
+    to_lhs,
+    rw ←nat.mod_add_div n 3,
+  end,
+  rw H (n % 3) (n / 3)
+end
