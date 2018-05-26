@@ -31,3 +31,10 @@ nat.cases_on m (by simp) (λ m, mod_eq_of_lt (mod_lt _ (succ_pos _)))
 
 def nat.mod_add (a b m : ℕ) : (a % m + b % m) % m = (a + b) % m :=
 nat.modeq.modeq_add (nat.mod_mod _ _) (nat.mod_mod _ _)
+
+-- modeq
+-- needs data.nat.modeq
+
+-- #check 2 ≡ 5 [MOD 5] -- notation
+
+
