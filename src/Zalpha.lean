@@ -29,6 +29,14 @@ instance : has_coe ℤ ℤα := ⟨of_int⟩
 @[simp] lemma of_int_i (r : ℤ) : (r : ℤα).i = r := rfl
 @[simp] lemma of_int_r (r : ℤ) : (r : ℤα).r = 0 := rfl
 
+@[reducible] def of_nat (n : ℕ) : ℤα := of_int n
+@[simp] lemma of_nat_eq_coe (r : ℕ) : of_nat r = r := rfl
+@[simp] lemma of_nat_i (r : ℕ) : (↑r : ℤα).i = r := rfl
+@[simp] lemma of_nat_r (r : ℕ) : (↑r : ℤα).r = 0 := rfl
+
+@[simp] lemma of_fib_r (n : ℕ) : (↑ (fib n) : ℤα).r = 0 := rfl
+@[simp] lemma of_fib_i (n : ℕ) : (↑ (fib n) : ℤα).i = fib n := rfl
+
 @[simp] theorem of_int_inj {z w : ℤ} : (z : ℤα) = w ↔ z = w :=
 ⟨congr_arg i, congr_arg _⟩
 
@@ -153,10 +161,18 @@ instance : has_pow ℤα ℕ := { pow := @monoid.pow ℤα _ }
 instance : has_repr ℤα :=
 { repr := λ a, repr a.i ++ " + " ++ repr a.r ++ "α" }
 
-lemma αβsum : α + β = 1 := rfl
-lemma αβprod : α * β = -1 := rfl
+@[simp]
+lemma coe_int_add {a b : ℤ} : (of_int (a + b) : ℤα) = of_int a + of_int b := rfl
+@[simp]
+lemma coe_int_neg {a : ℤ} : -of_int a = of_int (-a) := rfl
+@[simp]
+lemma coe_nat_add {a b : ℕ} : (of_int (↑(a + b) : ℤ) : ℤα) = of_int ↑a + of_int ↑b :=
+  begin
+  rw [int.coe_nat_add, @coe_int_add ↑a ↑b],
+  end
 
-@[simp] lemma fib_down (n : ℕ) : Fib ↑n = ↑(fib n) := rfl
+@[simp] lemma αβsum : α + β = 1 := rfl
+@[simp] lemma αβprod : α * β = -1 := rfl
 
 theorem α_mul_right : ∀ (z : ℤα), α * z = ⟨z.r, z.i + z.r⟩ :=
   begin
@@ -191,22 +207,67 @@ theorem β_mul_right : ∀ (z : ℤα), β * z = ⟨z.i - z.r, -z.i⟩ :=
   intro z, apply ext, simp, simp,
   end
 
-/-
-#eval Fib (-1)
-#eval β * β
-#eval β * β * β * β * β
+-- #eval Fib (-1)
+-- #eval β * β
+-- #eval β * β * β * β * β
 
-theorem β_fib : ∀ (n : ℕ), β^n = ⟨Fib (n+1), -Fib (-n)⟩ :=
+theorem β_fib : ∀ (n : ℕ), β^n = ⟨Fib (n+1), -Fib (n)⟩ :=
   begin
   intro n, induction n with n ih,
   show 1 = Zalpha.mk 1 0, refl,
-  show β*β^n = ⟨Fib (n+2), -Fib (-(n+1))⟩,
+  show β*β^n = ⟨Fib (n+2), -Fib ((n+1))⟩,
   rw ih,
-  have : β * ⟨Fib (n+1), -Fib (-n)⟩ = ⟨Fib (n+2), -Fib (n+1)⟩,
-  { simp [β_mul_right],
-    admit,
-  },
+  have : β * ⟨Fib (n+1), -Fib (n)⟩ = ⟨Fib (n+2), -Fib (n+1)⟩,
+    by rw [β_mul_right, Fib.is_fib n]; simp,
   rw this,
+  end
+
+def sqrt5 : ℤα := ⟨-1, 2⟩
+@[simp] lemma sqrt5_i : sqrt5.i = -1 := rfl
+@[simp] lemma sqrt5_r : sqrt5.r = 2 := rfl
+
+@[simp] lemma sqrt5_squared : sqrt5 ^ 2 = 5 := rfl
+
+theorem fib_αβ : ∀ (m : ℕ), ↑(fib m) * sqrt5 = α^m - β^m :=
+  begin
+  intro m,
+  cases m, refl,
+  rw [α_fib m, β_fib (m+1)],
+  have fibm1r : (↑ (fib (m + 1)) : ℤα).r = 0,
+    -- coercion issues >.<
+    { try { exact of_nat_r _, }, admit },
+  have fibm1i : (↑ (fib (m + 1)) : ℤα).i = fib (m + 1),
+    -- coercion issues >.<
+    { try { exact of_nat_i _, }, admit },
+  apply ext,
+  simp [fib_down],
+  have : (1 + (1 + (m : ℤ))) = m+↑1+↑1, simp,
+  rw [this, ← int.coe_nat_add, ← int.coe_nat_add, fib_down (m+2)],
+  rw [fibm1r, fibm1i],
+  apply eq_add_of_add_neg_eq, rw [← eq_neg_add_iff_add_eq],
+  simp, rw [← int.coe_nat_add, int.coe_nat_eq_coe_nat_iff],
+  refl,
+  simp [fibm1r, fibm1i],
+  have : Fib (1 + ↑m) = fib (m + 1),
+    {
+      show Fib (↑1 + ↑m) = fib (m + 1),
+      rw [← @int.coe_nat_add 1 m, add_comm, fib_down (m+1)]
+    },
+  rw [this, mul_two],
+  end
+
+/-
+theorem luc_αβ : ∀ (m : ℕ), ↑(luc m) = α^m + β^m :=
+  begin
+  intro m,
+  cases m, refl,
+  rw [α_fib m, β_fib (m+1)],
+  apply ext,
+  simp,
+  show luc (m+1) = fib m + fib (m + 2),
+  admit,
+  simp, rw of_nat_r,
+  admit,
   end
 -/
 
