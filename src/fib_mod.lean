@@ -11,6 +11,23 @@ def luc_mod (m : ℕ) : ℕ → ℕ
 | 1 := 1 % m
 | (n + 2) := ( (luc_mod n) + (luc_mod (n + 1)) ) % m
 
+theorem luc_mod_is_luc (m : ℕ) : ∀ r : ℕ,
+luc_mod m r = (luc r) % m  
+| 0 := rfl
+| 1 := rfl 
+| (n + 2) := begin
+have Hn := luc_mod_is_luc n,
+have Hnp1 := luc_mod_is_luc (n + 1),
+unfold luc_mod,
+unfold luc,
+rw Hn,
+rw Hnp1,
+show (luc n % m + luc (n + 1) % m) % m = (luc n + luc (n + 1)) % m,
+apply nat.mod_add,
+end 
+
+
+
 theorem fib_mod_eq (m n : ℕ) : (fib_mod m) n = (fib n) % m :=
 nat.rec_on_two n (rfl) (rfl) (begin
   intros d Hd Hdplus1,
