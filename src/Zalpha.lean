@@ -142,6 +142,8 @@ instance : comm_ring ℤα :=
   -/
 }
 
+@[simp] lemma comm_ring_zero : comm_ring.zero ℤα = 0 := rfl
+
 @[simp] lemma of_int_eq_coe (r : ℤ) : ↑r = of_int r :=
   eq.symm (int.eq_cast of_int rfl (λ _ _, rfl) r)
 @[simp] lemma coe_int_i (r : ℤ) : (r : ℤα).i = r := by simp
