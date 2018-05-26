@@ -24,37 +24,25 @@ theorem ext_iff {z w : ℤα} : z = w ↔ z.i = w.i ∧ z.r = w.r :=
 ⟨λ H, by simp [H], and.rec ext⟩
 
 def of_int (z : ℤ) : ℤα := ⟨z, 0⟩
-instance : has_coe ℤ ℤα := ⟨of_int⟩
-@[simp] lemma of_int_eq_coe (r : ℤ) : of_int r = r := rfl
-@[simp] lemma of_int_i (r : ℤ) : (r : ℤα).i = r := rfl
-@[simp] lemma of_int_r (r : ℤ) : (r : ℤα).r = 0 := rfl
+@[simp] lemma of_int_i (r : ℤ) : (of_int r : ℤα).i = r := rfl
+@[simp] lemma of_int_r (r : ℤ) : (of_int r : ℤα).r = 0 := rfl
 
 @[reducible] def of_nat (n : ℕ) : ℤα := of_int n
-@[simp] lemma of_nat_eq_coe (r : ℕ) : of_nat r = r := rfl
-@[simp] lemma of_nat_i (r : ℕ) : (↑r : ℤα).i = r := rfl
-@[simp] lemma of_nat_r (r : ℕ) : (↑r : ℤα).r = 0 := rfl
+@[simp] lemma of_nat_i (r : ℕ) : (of_nat r : ℤα).i = r := rfl
+@[simp] lemma of_nat_r (r : ℕ) : (of_nat r : ℤα).r = 0 := rfl
 
-@[simp] lemma of_fib_r (n : ℕ) : (↑ (fib n) : ℤα).r = 0 := rfl
-@[simp] lemma of_fib_i (n : ℕ) : (↑ (fib n) : ℤα).i = fib n := rfl
-
-@[simp] theorem of_int_inj {z w : ℤ} : (z : ℤα) = w ↔ z = w :=
-⟨congr_arg i, congr_arg _⟩
-
-instance : has_zero ℤα := ⟨(0 : ℤ)⟩
+instance : has_zero ℤα := ⟨⟨(0 : ℤ), 0⟩⟩
 instance : inhabited ℤα := ⟨0⟩
 
 @[simp] lemma zero_i : (0 : ℤα).i = 0 := rfl
 @[simp] lemma zero_r : (0 : ℤα).r = 0 := rfl
-lemma of_int_zero : ((0 : ℤ) : ℤα) = 0 := rfl
+lemma of_int_zero : (of_int (0 : ℤ) : ℤα) = 0 := rfl
 
-@[simp] theorem of_int_eq_zero {z : ℤ} : (z : ℤα) = 0 ↔ z = 0 := of_int_inj
-@[simp] theorem of_int_ne_zero {z : ℤ} : (z : ℤα) ≠ 0 ↔ z ≠ 0 := not_congr of_int_eq_zero
-
-instance : has_one ℤα := ⟨(1 : ℤ)⟩
+instance : has_one ℤα := ⟨⟨(1 : ℤ), 0⟩⟩
 
 @[simp] lemma one_i : (1 : ℤα).i = 1 := rfl
 @[simp] lemma one_r : (1 : ℤα).r = 0 := rfl
-@[simp] lemma of_int_one : ((1 : ℤ) : ℤα) = 1 := rfl
+@[simp] lemma of_int_one : (of_int (1 : ℤ) : ℤα) = 1 := rfl
 
 def α : ℤα := ⟨0, 1⟩
 
@@ -70,16 +58,16 @@ instance : has_add ℤα := ⟨λ z w, ⟨z.i + w.i, z.r + w.r⟩⟩
 
 @[simp] lemma add_i (z w : ℤα) : (z + w).i = z.i + w.i := rfl
 @[simp] lemma add_r (z w : ℤα) : (z + w).r = z.r + w.r := rfl
-@[simp] lemma of_int_add (r s : ℤ) : ((r + s : ℤ) : ℤα) = r + s := rfl
+@[simp] lemma of_int_add (r s : ℤ) : (of_int (r + s : ℤ) : ℤα) = of_int (r + s) := rfl
 
-@[simp] lemma of_int_bit0 (r : ℤ) : ((bit0 r : ℤ) : ℤα) = bit0 r := rfl
-@[simp] lemma of_int_bit1 (r : ℤ) : ((bit1 r : ℤ) : ℤα) = bit1 r := rfl
+@[simp] lemma of_int_bit0 (r : ℤ) : (of_int (bit0 r : ℤ) : ℤα) = bit0 (of_int r) := rfl
+@[simp] lemma of_int_bit1 (r : ℤ) : (of_int (bit1 r : ℤ) : ℤα) = bit1 (of_int r) := rfl
 
 instance : has_neg ℤα := ⟨λ z, ⟨-z.i, -z.r⟩⟩
 
 @[simp] lemma neg_i (z : ℤα) : (-z).i = -z.i := rfl
 @[simp] lemma neg_r (z : ℤα) : (-z).r = -z.r := rfl
-@[simp] lemma of_int_neg (r : ℤ) : ((-r : ℤ) : ℤα) = -r := ext_iff.2 $ by simp
+@[simp] lemma of_int_neg (r : ℤ) : (of_int (-r : ℤ) : ℤα) = -of_int r := ext_iff.2 $ by simp
 
 --   bα * dα
 -- = (b/2 + b*sqrt(5)/2) * (d/2 + d*sqrt(5)/2)
@@ -99,13 +87,18 @@ instance : has_mul ℤα := ⟨λ z w, ⟨z.i * w.i + z.r * w.r, z.i * w.r + z.r
 
 @[simp] lemma mul_i (z w : ℤα) : (z * w).i = z.i * w.i + z.r * w.r := rfl
 @[simp] lemma mul_r (z w : ℤα) : (z * w).r = z.i * w.r + z.r * w.i + z.r * w.r := rfl
-@[simp] lemma of_int_mul (r s : ℤ) : ((r * s : ℤ) : ℤα) = r * s := ext_iff.2 $ by simp
+@[simp] lemma of_int_mul (r s : ℤ) : (of_int (r * s : ℤ) : ℤα) = of_int r * of_int s := ext_iff.2 $ by simp
 
-lemma mk_eq_add_mul_α (a b : ℤ) : Zalpha.mk a b = a + b * α :=
+lemma mk_eq_add_mul_α (a b : ℤ) : Zalpha.mk a b = of_int a + of_int b * α :=
 ext_iff.2 $ by simp
 
-@[simp] lemma re_add_im (z : ℤα) : (z.i : ℤα) + z.r * α = z :=
+@[simp] lemma re_add_im (z : ℤα) : (of_int z.i : ℤα) + of_int z.r * α = z :=
 ext_iff.2 $ by simp
+
+instance : decidable_eq ℤα :=
+  λ a b, if h : (a.1 = b.1 ∧ a.2 = b.2)
+    then is_true (iff.mpr ext_iff h)
+    else is_false (iff.mpr (by rw ext_iff) h)
 
 instance : comm_ring ℤα :=
 { add            := (+),
@@ -139,7 +132,41 @@ instance : comm_ring ℤα :=
     simp [right_distrib],
     end,
   mul_comm := by intros; apply ext; simp; simp [mul_comm],
+  /-
+  eq_zero_or_eq_zero_of_mul_eq_zero :=
+    begin
+    intros a b h, rw ext_iff at h, simp at h,
+    by_contradiction h', -- rw [@ext_iff a, @ext_iff b] at h', simp at h',
+    rw [not_or_distrib] at h',
+    end
+  -/
 }
+
+@[simp] lemma of_int_eq_coe (r : ℤ) : ↑r = of_int r :=
+  eq.symm (int.eq_cast of_int rfl (λ _ _, rfl) r)
+@[simp] lemma coe_int_i (r : ℤ) : (r : ℤα).i = r := by simp
+@[simp] lemma coe_int_r (r : ℤ) : (r : ℤα).r = 0 := by simp
+
+@[simp] lemma of_nat_eq_coe (r : ℕ) : ↑ r = of_nat r :=
+  eq.symm (nat.eq_cast of_nat rfl rfl (λ a b, rfl) r)
+@[simp] lemma coe_nat_i (r : ℕ) : (↑r : ℤα).i = r := by simp
+@[simp] lemma coe_nat_r (r : ℕ) : (↑r : ℤα).r = 0 := by simp
+
+@[simp] lemma of_fib_r (n : ℕ) : (↑ (fib n) : ℤα).r = 0 := by simp
+@[simp] lemma of_fib_i (n : ℕ) : (↑ (fib n) : ℤα).i = fib n := by simp
+
+@[simp] theorem of_int_inj {z w : ℤ} : (z : ℤα) = w ↔ z = w :=
+⟨eq.substr (of_int_eq_coe z) $ eq.substr (of_int_eq_coe w) (congr_arg i), congr_arg _⟩
+
+@[simp] theorem of_int_eq_zero {z : ℤ} : (z : ℤα) = 0 ↔ z = 0 :=
+  by show (z : ℤα) = ↑ 0 ↔ z = ↑ 0; exact @of_int_inj z 0
+@[simp] theorem of_int_ne_zero {z : ℤ} : (z : ℤα) ≠ 0 ↔ z ≠ 0 :=
+  not_congr of_int_eq_zero
+
+@[simp] lemma of_nat_eq_nat_cast (r : ℕ) : nat.cast r = of_nat r :=
+  eq.symm (nat.eq_cast of_nat rfl rfl (λ a b, rfl) r)
+@[simp] lemma nat_cast_i (r : ℕ) : (nat.cast r : ℤα).i = r := by simp
+@[simp] lemma nat_cast_r (r : ℕ) : (nat.cast r : ℤα).i = r := by simp
 
 /- Extra instances to short-circuit type class resolution -/
 instance : has_sub ℤα            := by apply_instance
@@ -233,42 +260,47 @@ theorem fib_αβ : ∀ (m : ℕ), ↑(fib m) * sqrt5 = α^m - β^m :=
   intro m,
   cases m, refl,
   rw [α_fib m, β_fib (m+1)],
-  have fibm1r : (↑ (fib (m + 1)) : ℤα).r = 0,
-    -- coercion issues >.<
-    { try { exact of_nat_r _, }, admit },
-  have fibm1i : (↑ (fib (m + 1)) : ℤα).i = fib (m + 1),
-    -- coercion issues >.<
-    { try { exact of_nat_i _, }, admit },
   apply ext,
-  simp [fib_down],
-  have : (1 + (1 + (m : ℤ))) = m+↑1+↑1, simp,
-  rw [this, ← int.coe_nat_add, ← int.coe_nat_add, fib_down (m+2)],
-  rw [fibm1r, fibm1i],
-  apply eq_add_of_add_neg_eq, rw [← eq_neg_add_iff_add_eq],
-  simp, rw [← int.coe_nat_add, int.coe_nat_eq_coe_nat_iff],
-  refl,
-  simp [fibm1r, fibm1i],
-  have : Fib (1 + ↑m) = fib (m + 1),
-    {
-      show Fib (↑1 + ↑m) = fib (m + 1),
-      rw [← @int.coe_nat_add 1 m, add_comm, fib_down (m+1)]
-    },
-  rw [this, mul_two],
+  {
+    simp,
+    have : (1 + (1 + (m : ℤ))) = ↑(m+1+1), simp,
+    rw [this, fib_down (m+2), fib_down m],
+    apply eq_add_of_add_neg_eq, rw [← eq_neg_add_iff_add_eq],
+    simp, rw [← int.coe_nat_add, int.coe_nat_eq_coe_nat_iff],
+    refl,
+  },
+  {
+    simp,
+    have : Fib (1 + ↑m) = ↑(fib (m + 1)),
+      {
+        show Fib (↑1 + ↑m) = fib (m + 1),
+        rw [← @int.coe_nat_add 1 m, add_comm, fib_down (m+1)]
+      },
+    rw [this, mul_two],
+  },
   end
 
-/-
 theorem luc_αβ : ∀ (m : ℕ), ↑(luc m) = α^m + β^m :=
   begin
   intro m,
   cases m, refl,
   rw [α_fib m, β_fib (m+1)],
   apply ext,
-  simp,
-  show luc (m+1) = fib m + fib (m + 2),
-  admit,
-  simp, rw of_nat_r,
-  admit,
+  {
+    simp,
+    have : (1 + (1 + (m : ℤ))) = ↑(m+1+1), simp,
+    rw [this, fib_down (m+2), fib_down m],
+    rw [← int.coe_nat_add, int.coe_nat_eq_coe_nat_iff],
+    show luc (m+1) = fib m + fib (m + 2),
+    induction m using nat.rec_on_two with n h0 h1, refl, refl,
+    simp at h0, simp at h1,
+    unfold1 luc, rw [h0, h1], simp,
+    show
+      fib n + (fib (n + 1) + (fib (n + 2) + fib (n + 3))) =
+      fib (n + 2) + fib (n + 4),
+    rw [← add_assoc], refl,
+  },
+  simp, -- trivial! this is since (α^m).r = -(β^m).r
   end
--/
 
 end Zalpha
