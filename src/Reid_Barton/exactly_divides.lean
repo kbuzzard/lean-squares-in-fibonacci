@@ -71,7 +71,6 @@ begin
   { intro h, rcases h with ⟨k, e, nd⟩, simp [e, nd] }
 end
 
-set_option pp.notation false
 lemma exactly_divides_succ {r n : ℕ} (p_pos : p > 0) : p^r ∣∣ n ↔ p^(succ r) ∣∣ (p * n) :=
 begin
   rw [exactly_divides'' p_pos, exactly_divides'' p_pos],
