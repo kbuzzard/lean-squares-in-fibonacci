@@ -23,4 +23,3 @@ import definitions
 
 -- Statement of main theorem
 theorem largest_square_in_fibonacci_sequence (n d : ℕ) : fib n = d ^ 2 → fib n ≤ 144 := sorry 
-
