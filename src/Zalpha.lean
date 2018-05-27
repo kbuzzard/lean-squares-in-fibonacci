@@ -17,6 +17,22 @@ structure Zalpha : Type :=
 
 notation `ℤα` := Zalpha
 
+instance nonsquare_five : zsqrtd.nonsquare 5 :=
+⟨λ n, nat.cases_on n dec_trivial $ λ n,
+  nat.cases_on n dec_trivial $ λ n,
+  nat.cases_on n dec_trivial $ λ n,
+  ne_of_lt $ calc 5 < 3 * 3 : dec_trivial
+    ... ≤ 3 * (n+3) : nat.mul_le_mul_left _ (nat.le_add_left _ _)
+    ... ≤ (n+3) * (n+3) : nat.mul_le_mul_right _ (nat.le_add_left _ _)⟩
+
+@[simp] lemma is_ring_hom.map_int {α : Type*} {β : Type*}
+  [ring α] [ring β] (f : α → β)
+  [is_ring_hom f] (i : ℤ) : f i = i :=
+int.induction_on i
+  (is_ring_hom.map_zero f)
+  (λ i H, by simp [is_ring_hom.map_add f, is_ring_hom.map_one f, H])
+  (λ i H, by simp [is_ring_hom.map_add f, is_ring_hom.map_neg f, is_ring_hom.map_one f, H])
+
 namespace Zalpha
 
 @[simp] theorem eta : ∀ z : ℤα, Zalpha.mk z.i z.r = z
@@ -108,14 +124,6 @@ by refine
   mul      := (*),
   one      := 1,
   mul_comm := by intros; apply ext; simp [mul_comm],
-  /-
-  eq_zero_or_eq_zero_of_mul_eq_zero :=
-    begin
-    intros a b h, rw ext_iff at h, simp at h,
-    by_contradiction h', -- rw [@ext_iff a, @ext_iff b] at h', simp at h',
-    rw [not_or_distrib] at h',
-    end
-  -/
   ..
 }; { intros; apply ext; simp [left_distrib, right_distrib, mul_assoc] }
 
@@ -146,6 +154,9 @@ by refine
   eq.symm (nat.eq_cast of_nat rfl rfl (λ a b, rfl) r)
 @[simp] lemma nat_cast_i (r : ℕ) : (nat.cast r : ℤα).i = r := by simp
 @[simp] lemma nat_cast_r (r : ℕ) : (nat.cast r : ℤα).i = r := by simp
+
+@[simp] lemma re_add_im_coe (z : ℤα) : (z.i : ℤα) + z.r * α = z :=
+ext_iff.2 $ by simp
 
 /- Extra instances to short-circuit type class resolution -/
 instance : has_sub ℤα            := by apply_instance
@@ -207,14 +218,6 @@ def sqrt5 : ℤα := ⟨-1, 2⟩
 @[simp] lemma sqrt5_i : sqrt5.i = -1 := rfl
 @[simp] lemma sqrt5_r : sqrt5.r = 2 := rfl
 @[simp] lemma sqrt5_squared : sqrt5 ^ 2 = 5 := rfl
-
-instance nonsquare_five : zsqrtd.nonsquare 5 :=
-⟨λ n, nat.cases_on n dec_trivial $ λ n,
-  nat.cases_on n dec_trivial $ λ n,
-  nat.cases_on n dec_trivial $ λ n,
-  ne_of_lt $ calc 5 < 3 * 3 : dec_trivial
-    ... ≤ 3 * (n+3) : nat.mul_le_mul_left _ (nat.le_add_left _ _)
-    ... ≤ (n+3) * (n+3) : nat.mul_le_mul_right _ (nat.le_add_left _ _)⟩
 
 -- multiply by two, i.e. (a+bα) ↦ 2a+b(1+√5)
 def to_Zsqrt5 (z : ℤα) : ℤ√5 :=
@@ -328,5 +331,28 @@ theorem zero_iff_norm_zero (z : ℤα) : z = 0 ↔ z.norm = 0 :=
 ⟨λ H, H.symm ▸ rfl, zero_of_norm_zero z⟩
 
 instance : integral_domain ℤα := by apply_instance
+
+theorem char_eq (z : ℤα) (H : z * z - z - 1 = 0) : z = α ∨ z = β :=
+have H1 : (z - α) * (z - β) = 0,
+  by rw [← H, α, β]; ring,
+(eq_zero_or_eq_zero_of_mul_eq_zero H1).cases_on
+  (or.inl ∘ eq_of_sub_eq_zero)
+  (or.inr ∘ eq_of_sub_eq_zero)
+
+theorem gal (f : ℤα → ℤα) [is_ring_hom f] : f = id ∨ f = conj :=
+have H : f α * f α - f α - 1 = 0,
+  by rw [← is_ring_hom.map_mul f, ← is_ring_hom.map_sub f];
+    rw [← is_ring_hom.map_one f]; apply sub_self,
+(char_eq (f α) H).cases_on
+  (assume H : f α = α, or.inl $ funext $ show ∀ z, f z = z,
+    from λ z, by rw [← re_add_im_coe z];
+      rw [is_ring_hom.map_add f, is_ring_hom.map_mul f, H];
+      rw [is_ring_hom.map_int f, is_ring_hom.map_int f])
+  (assume H : f α = β, or.inr $ funext $ show ∀ z, f z = conj z,
+    from λ z, by rw [← re_add_im_coe z];
+      rw [is_ring_hom.map_add f, is_ring_hom.map_mul f, H];
+      rw [is_ring_hom.map_int f, is_ring_hom.map_int f];
+      rw [is_ring_hom.map_add conj, is_ring_hom.map_mul conj];
+      rw [is_ring_hom.map_int conj, is_ring_hom.map_int conj]; refl)
 
 end Zalpha
