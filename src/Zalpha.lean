@@ -2,7 +2,7 @@ import algebra.group_power
 import definitions
 import data.nat.gcd
 import data.nat.prime
-import data.real.basic
+import number_theory.pell
 import tactic.ring
 
 -- Z[alpha] where alpha := (1 + sqrt(5))/2, representing the minimal ring
@@ -22,7 +22,7 @@ namespace Zalpha
 @[simp] theorem eta : ∀ z : ℤα, Zalpha.mk z.i z.r = z
 | ⟨a, b⟩ := rfl
 
-theorem ext : ∀ {z w : ℤα}, z.i = w.i → z.r = w.r → z = w
+@[extensionality] theorem ext : ∀ {z w : ℤα}, z.i = w.i → z.r = w.r → z = w
 | ⟨zr, zi⟩ ⟨_, _⟩ rfl rfl := rfl
 
 theorem ext_iff {z w : ℤα} : z = w ↔ z.i = w.i ∧ z.r = w.r :=
@@ -208,6 +208,43 @@ def sqrt5 : ℤα := ⟨-1, 2⟩
 @[simp] lemma sqrt5_r : sqrt5.r = 2 := rfl
 @[simp] lemma sqrt5_squared : sqrt5 ^ 2 = 5 := rfl
 
+instance nonsquare_five : zsqrtd.nonsquare 5 :=
+⟨λ n, nat.cases_on n dec_trivial $ λ n,
+  nat.cases_on n dec_trivial $ λ n,
+  nat.cases_on n dec_trivial $ λ n,
+  ne_of_lt $ calc 5 < 3 * 3 : dec_trivial
+    ... ≤ 3 * (n+3) : nat.mul_le_mul_left _ (nat.le_add_left _ _)
+    ... ≤ (n+3) * (n+3) : nat.mul_le_mul_right _ (nat.le_add_left _ _)⟩
+
+-- multiply by two, i.e. (a+bα) ↦ 2a+b(1+√5)
+def to_Zsqrt5 (z : ℤα) : ℤ√5 :=
+⟨2*z.i + z.r, z.r⟩
+
+@[simp] lemma to_Zsqrt5_zero : (0:ℤα).to_Zsqrt5 = 0 := rfl
+
+@[simp] lemma to_Zsqrt5_add (z w : ℤα) :
+  (z + w).to_Zsqrt5 = z.to_Zsqrt5 + w.to_Zsqrt5 :=
+by simp [to_Zsqrt5, mul_add]
+
+@[simp] lemma to_Zsqrt5_mul (z w : ℤα) :
+  (z * w).to_Zsqrt5 * 2 = z.to_Zsqrt5 * w.to_Zsqrt5 :=
+by rw [zsqrtd.ext, mul_two]; unfold to_Zsqrt5; split; simp; ring
+
+theorem to_Zsqrt5_inj : function.injective to_Zsqrt5 :=
+begin
+  intros z w H,
+  unfold to_Zsqrt5 at H,
+  cases zsqrtd.ext.1 H with H1 H2,
+  dsimp at H1 H2,
+  rw [H2, add_right_cancel_iff] at H1,
+  have H3 := eq_of_mul_eq_mul_left dec_trivial H1,
+  apply ext; assumption
+end
+
+theorem eq_zero_of_to_Zsqrt5_eq_zero (z : ℤα)
+  (H : z.to_Zsqrt5 = 0) : z = 0 :=
+to_Zsqrt5_inj H
+
 /- conj (a + bα)
  = a + bβ
  = a + b(1 - α)
@@ -222,86 +259,74 @@ def conj (z : ℤα) : ℤα := ⟨z.i + z.r, -z.r⟩
 -/
 def norm (z : ℤα) : ℤ := z.i * z.i + z.i * z.r - z.r * z.r
 
-@[simp] lemma add_conj (z : ℤα) : z + conj z = 2 * z.i + z.r :=
+@[simp] lemma add_conj (z : ℤα) : z + z.conj = 2 * z.i + z.r :=
 by apply ext; simp [conj, two_mul]
 
-@[simp] lemma mul_conj (z : ℤα) : z * conj z = norm z :=
+@[simp] lemma mul_conj_eq_norm (z : ℤα) : z * z.conj = z.norm :=
 by apply ext; simp [conj, norm, mul_add, mul_comm]
+
+@[simp] lemma conj_conj (z : ℤα) : z.conj.conj = z :=
+by apply ext; simp [conj]
 
 instance : is_ring_hom conj :=
 { map_add := λ z w, by apply ext; simp [conj],
   map_mul := λ z w, by apply ext; simp [conj, add_mul, mul_add, -add_comm]; ac_refl,
   map_one := rfl }
 
-lemma norm_mul (z w : ℤα) : norm (z * w) = norm z * norm w :=
+@[simp] lemma conj_zero : (0:ℤα).conj = 0 :=
+is_ring_hom.map_zero conj
+
+lemma conj_bijective : function.bijective conj :=
+⟨λ x y H, by rw [← x.conj_conj, H, y.conj_conj],
+  λ x, ⟨x.conj, conj_conj x⟩⟩
+
+lemma eq_zero_of_conj_eq_zero (z : ℤα) (H : z.conj = 0) : z = 0 :=
+conj_bijective.1 H
+
+lemma to_Zsqrt5_conj (z : ℤα) : z.conj.to_Zsqrt5 = z.to_Zsqrt5.conj :=
+by rw zsqrtd.ext; split; simp [conj, to_Zsqrt5, two_mul]
+
+lemma norm_mul (z w : ℤα) : (z * w).norm = z.norm * w.norm :=
 by simp [norm, add_mul, mul_add]; ring
 
-local attribute [instance] nat.decidable_prime_1
-theorem prime_five : nat.prime 5 := dec_trivial
+instance : decidable_linear_ordered_comm_ring ℤα :=
+{ le := λ z w, to_Zsqrt5 z ≤ to_Zsqrt5 w,
+  le_refl := λ z, show to_Zsqrt5 z ≤ to_Zsqrt5 z, from le_refl _,
+  le_trans := λ z₁ z₂ z₃ H12 H23, show to_Zsqrt5 z₁ ≤ to_Zsqrt5 z₃, from le_trans H12 H23,
+  le_antisymm := λ z w Hzw Hwz, to_Zsqrt5_inj $ le_antisymm Hzw Hwz,
+  lt := λ z w, to_Zsqrt5 z < to_Zsqrt5 w,
+  lt_iff_le_not_le := λ z w, show to_Zsqrt5 z < to_Zsqrt5 w ↔ _, from lt_iff_le_not_le,
+  add_le_add_left := λ z₁ z₂ H12 z₃, calc _ = _ : to_Zsqrt5_add _ _
+    ... ≤ _ : zsqrtd.add_le_add_left _ _ H12 _
+    ... = _ : (to_Zsqrt5_add _ _).symm,
+  add_lt_add_left := λ z₁ z₂ H12 z₃, calc _ = _ : to_Zsqrt5_add _ _
+    ... < _ : zsqrtd.add_lt_add_left _ _ H12 _
+    ... = _ : (to_Zsqrt5_add _ _).symm,
+  mul_nonneg := λ z w (Hz : to_Zsqrt5 z ≥ 0) (Hw : to_Zsqrt5 w ≥ 0),
+    show to_Zsqrt5 (z * w) ≥ 0,
+    from nonneg_of_mul_nonneg_right
+      (trans_rel_left _ (mul_nonneg Hz Hw) (to_Zsqrt5_mul z w).symm)
+      (add_pos zero_lt_one zero_lt_one),
+  mul_pos := λ z w (Hz : to_Zsqrt5 z > 0) (Hw : to_Zsqrt5 w > 0),
+    show to_Zsqrt5 (z * w) > 0,
+    from pos_of_mul_pos_right
+      (trans_rel_left _ (mul_pos Hz Hw) (to_Zsqrt5_mul z w).symm)
+      (add_nonneg zero_le_one zero_le_one),
+  le_total := λ z w, zsqrtd.le_total _ _,
+  zero_lt_one := show 0 < to_Zsqrt5 1, from dec_trivial,
+  zero_ne_one := dec_trivial,
+  decidable_le := λ z w, show decidable (to_Zsqrt5 z ≤ to_Zsqrt5 w), by apply_instance,
+  .. Zalpha.comm_ring }
 
-lemma zero_of_norm_zero (z : ℤα) (H : norm z = 0) : z = 0 :=
-begin
-  unfold norm at H,
-  have H1 : (2 * z.i + z.r) * (2 * z.i + z.r) = 5 * z.r * z.r,
-  { suffices : 4 * (z.i * z.i + z.i * z.r - z.r * z.r) + 5 * z.r * z.r = 5 * z.r * z.r,
-    { rw ← this, ring },
-    simp [H] },
-  have H2 : (2 * z.i + z.r).nat_abs * (2 * z.i + z.r).nat_abs = 5 * z.r.nat_abs * z.r.nat_abs,
-  { have H2 := congr_arg int.nat_abs H1,
-    simp [int.nat_abs_mul, -add_comm] at H2,
-    exact H2 },
-  suffices : (2 * z.i + z.r).nat_abs = 0 ∧ z.r.nat_abs = 0,
-  { have H3 := int.eq_zero_of_nat_abs_eq_zero this.1,
-    have H4 := int.eq_zero_of_nat_abs_eq_zero this.2,
-    simp [H4, two_mul] at H3,
-    apply ext,
-    exact add_self_eq_zero.1 H3,
-    exact H4 },
-  generalize_hyp : (2 * z.i + z.r).nat_abs = p at H2 ⊢,
-  generalize_hyp : z.r.nat_abs = q at H2 ⊢,
-  clear H1 H z,
-  cases nat.eq_zero_or_pos (nat.gcd p q) with h h,
-  { split,
-    exact nat.eq_zero_of_gcd_eq_zero_left h,
-    exact nat.eq_zero_of_gcd_eq_zero_right h },
-  rcases nat.exists_coprime h with ⟨m, n, co, hp, hq⟩,
-  generalize_hyp : nat.gcd p q = g at h hp hq,
-  have H3 : m * m = 5 * (n * n),
-  { rw [hp, hq] at H2,
-    apply nat.eq_of_mul_eq_mul_left (mul_pos h h),
-    simpa [mul_comm, mul_left_comm, mul_assoc] using H2 },
-  have H4 : nat.coprime m (n * n) := co.mul_right co,
-  have H5 : nat.coprime (m * m) (n * n) := H4.mul H4,
-  exfalso,
-  have Hns : ∀ r, 5 ≠ r * r,
-  { intro r,
-    cases r, { exact dec_trivial },
-    cases r, { exact dec_trivial },
-    cases r, { exact dec_trivial },
-    apply ne_of_lt,
-    exact calc 5 < 3 * 3 : dec_trivial
-      ... ≤ 3 * (r+3) : nat.mul_le_mul_left _ (nat.le_add_left _ _)
-      ... ≤ (r+3) * (r+3) : nat.mul_le_mul_right _ (nat.le_add_left _ _) },
-  apply Hns m,
-  apply nat.dvd_antisymm,
-  { rw H3, apply dvd_mul_right },
-  { apply H5.dvd_of_dvd_mul_right, rw H3 }
-end
+lemma zero_of_norm_zero (z : ℤα) (H : z.norm = 0) : z = 0 :=
+have H1 : z * z.conj = 0,
+  by rw [mul_conj_eq_norm, H]; refl,
+(eq_zero_or_eq_zero_of_mul_eq_zero H1).cases_on
+  id z.eq_zero_of_conj_eq_zero
 
-theorem zero_iff_norm_zero (z : ℤα) : z = 0 ↔ norm z = 0 :=
+theorem zero_iff_norm_zero (z : ℤα) : z = 0 ↔ z.norm = 0 :=
 ⟨λ H, H.symm ▸ rfl, zero_of_norm_zero z⟩
 
-theorem eq_zero_or_eq_zero_of_mul_eq_zero (z w : ℤα)
-  (H : z * w = 0) : z = 0 ∨ w = 0 :=
-begin
-  rw [zero_iff_norm_zero, norm_mul] at H,
-  rw [zero_iff_norm_zero, zero_iff_norm_zero],
-  exact eq_zero_or_eq_zero_of_mul_eq_zero H
-end
-
-instance : integral_domain ℤα :=
-{ eq_zero_or_eq_zero_of_mul_eq_zero := eq_zero_or_eq_zero_of_mul_eq_zero,
-  zero_ne_one := dec_trivial,
-  .. Zalpha.comm_ring }
+instance : integral_domain ℤα := by apply_instance
 
 end Zalpha
