@@ -1,4 +1,4 @@
-import analysis.real data.real.irrational Zalpha linear_algebra.basic
+import data.real.irrational Zalpha linear_algebra.basic
 import data.real.basic data.nat.prime
 import tactic.norm_num tactic.ring
 

@@ -2,6 +2,7 @@ import algebra.group_power
 import definitions
 import data.nat.gcd
 import data.nat.prime
+import data.real.basic
 import tactic.ring
 
 -- Z[alpha] where alpha := (1 + sqrt(5))/2, representing the minimal ring
