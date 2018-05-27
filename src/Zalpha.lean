@@ -1,5 +1,8 @@
 import algebra.group_power
 import definitions
+import data.nat.gcd
+import data.nat.prime
+import tactic.ring
 
 -- Z[alpha] where alpha := (1 + sqrt(5))/2, representing the minimal ring
 -- (with addition, subtraction, and multiplication) containing the roots
@@ -7,6 +10,7 @@ import definitions
 -- (with beta < alpha)
 --
 -- i as in int, r as in root
+@[derive decidable_eq]
 structure Zalpha : Type :=
 (i : ℤ) (r : ℤ)
 
@@ -95,43 +99,14 @@ ext_iff.2 $ by simp
 @[simp] lemma re_add_im (z : ℤα) : (of_int z.i : ℤα) + of_int z.r * α = z :=
 ext_iff.2 $ by simp
 
-instance : decidable_eq ℤα :=
-  λ a b, if h : (a.1 = b.1 ∧ a.2 = b.2)
-    then is_true (iff.mpr ext_iff h)
-    else is_false (iff.mpr (by rw ext_iff) h)
-
 instance : comm_ring ℤα :=
-{ add            := (+),
-  add_assoc      := by intros; apply ext; simp; simp,
-  zero           := 0,
-  zero_add       := by intros; apply ext; simp; simp,
-  add_zero       := by intros; apply ext; simp; simp,
-  neg            := has_neg.neg,
-  add_left_neg   := by intros; apply ext; simp; simp,
-  add_comm       := by intros; apply ext; simp; simp,
-  mul            := (*),
-  mul_assoc      :=
-    begin
-    intros, apply ext,
-    simp [left_distrib, right_distrib, mul_assoc],
-    simp [left_distrib, right_distrib, mul_assoc],
-    end,
-  one            := 1,
-  one_mul        := by intros; apply ext; simp; simp,
-  mul_one        := by intros; apply ext; simp; simp,
-  left_distrib   :=
-    begin
-    intros, apply ext,
-    simp [left_distrib],
-    simp [left_distrib],
-    end,
-  right_distrib  :=
-    begin
-    intros, apply ext,
-    simp [right_distrib],
-    simp [right_distrib],
-    end,
-  mul_comm := by intros; apply ext; simp; simp [mul_comm],
+by refine
+{ add      := (+),
+  zero     := 0,
+  neg      := has_neg.neg,
+  mul      := (*),
+  one      := 1,
+  mul_comm := by intros; apply ext; simp [mul_comm],
   /-
   eq_zero_or_eq_zero_of_mul_eq_zero :=
     begin
@@ -140,7 +115,8 @@ instance : comm_ring ℤα :=
     rw [not_or_distrib] at h',
     end
   -/
-}
+  ..
+}; { intros; apply ext; simp [left_distrib, right_distrib, mul_assoc] }
 
 @[simp] lemma comm_ring_zero : comm_ring.zero ℤα = 0 := rfl
 
@@ -149,19 +125,19 @@ instance : comm_ring ℤα :=
 @[simp] lemma coe_int_i (r : ℤ) : (r : ℤα).i = r := by simp
 @[simp] lemma coe_int_r (r : ℤ) : (r : ℤα).r = 0 := by simp
 
-@[simp] lemma of_nat_eq_coe (r : ℕ) : ↑ r = of_nat r :=
+@[simp] lemma of_nat_eq_coe (r : ℕ) : ↑r = of_nat r :=
   eq.symm (nat.eq_cast of_nat rfl rfl (λ a b, rfl) r)
 @[simp] lemma coe_nat_i (r : ℕ) : (↑r : ℤα).i = r := by simp
 @[simp] lemma coe_nat_r (r : ℕ) : (↑r : ℤα).r = 0 := by simp
 
-@[simp] lemma of_fib_r (n : ℕ) : (↑ (fib n) : ℤα).r = 0 := by simp
-@[simp] lemma of_fib_i (n : ℕ) : (↑ (fib n) : ℤα).i = fib n := by simp
+@[simp] lemma of_fib_r (n : ℕ) : (↑(fib n) : ℤα).r = 0 := by simp
+@[simp] lemma of_fib_i (n : ℕ) : (↑(fib n) : ℤα).i = fib n := by simp
 
 @[simp] theorem of_int_inj {z w : ℤ} : (z : ℤα) = w ↔ z = w :=
 ⟨eq.substr (of_int_eq_coe z) $ eq.substr (of_int_eq_coe w) (congr_arg i), congr_arg _⟩
 
 @[simp] theorem of_int_eq_zero {z : ℤ} : (z : ℤα) = 0 ↔ z = 0 :=
-  by show (z : ℤα) = ↑ 0 ↔ z = ↑ 0; exact @of_int_inj z 0
+  by show (z : ℤα) = ↑0 ↔ z = ↑0; exact @of_int_inj z 0
 @[simp] theorem of_int_ne_zero {z : ℤ} : (z : ℤα) ≠ 0 ↔ z ≠ 0 :=
   not_congr of_int_eq_zero
 
@@ -196,66 +172,136 @@ lemma coe_int_add {a b : ℤ} : (of_int (a + b) : ℤα) = of_int a + of_int b :
 lemma coe_int_neg {a : ℤ} : -of_int a = of_int (-a) := rfl
 @[simp]
 lemma coe_nat_add {a b : ℕ} : (of_int (↑(a + b) : ℤ) : ℤα) = of_int ↑a + of_int ↑b :=
-  begin
-  rw [int.coe_nat_add, @coe_int_add ↑a ↑b],
-  end
+by rw [int.coe_nat_add, @coe_int_add ↑a ↑b]
 
 @[simp] lemma αβsum : α + β = 1 := rfl
 @[simp] lemma αβprod : α * β = -1 := rfl
 lemma α_sqr : α^2 = α + 1 := rfl
 
-theorem α_mul_right : ∀ (z : ℤα), α * z = ⟨z.r, z.i + z.r⟩ :=
-  begin
-  intro z, apply ext, simp, simp,
-  end
+theorem α_mul_right (z : ℤα) : α * z = ⟨z.r, z.i + z.r⟩ :=
+by apply ext; simp
 
-theorem α_fib : ∀ (n : ℕ), α^(n+1) = ⟨Fib n, Fib (n+1)⟩ :=
-  begin
-  intro n, induction n with n ih,
-  show α = Zalpha.mk 0 1, refl,
-  show α*α^(n + 1) = ⟨Fib (n+1), Fib (n+2)⟩,
-  rw ih,
-  have : α * ⟨Fib n, Fib (n+1)⟩ = ⟨Fib (n+1), Fib (n+2)⟩,
-  { simp [α_mul_right],
-    show Fib ↑n + Fib (1 + ↑n) = Fib (2 + ↑n),
-    rw [add_comm _ ↑n, add_comm _ ↑n],
-    rw [← int.coe_nat_succ n],
-    show Fib ↑n + Fib ↑(n+1) = Fib (↑n + 2),
-    show Fib ↑n + Fib ↑(n+1) = Fib (↑n + 1 + 1),
-    rw [← int.coe_nat_succ n],
-    rw [← int.coe_nat_succ (nat.succ n)],
-    rw [fib_down n, fib_down (n+1), fib_down (n+2)],
-    rw [← int.coe_nat_add],
-    apply (int.of_nat_eq_of_nat_iff (fib n + fib (n + 1)) (fib (n+2))).2,
-    refl,
-  },
-  rw this,
-  end
+theorem α_fib (n : ℕ) : α^(n+1) = ⟨Fib n, Fib (n+1)⟩ :=
+begin
+  induction n with n ih, { refl },
+  change α*α^(n + 1) = ⟨Fib (n+1), Fib (n+2)⟩,
+  rw ih, apply ext; simp [-add_comm, Fib.is_fib]
+end
 
-theorem β_mul_right : ∀ (z : ℤα), β * z = ⟨z.i - z.r, -z.i⟩ :=
-  begin
-  intro z, apply ext, simp, simp,
-  end
+theorem β_mul_right (z : ℤα) : β * z = ⟨z.i - z.r, -z.i⟩ :=
+by apply ext; simp
 
 -- #eval Fib (-1)
 -- #eval β * β
 -- #eval β * β * β * β * β
 
-theorem β_fib : ∀ (n : ℕ), β^n = ⟨Fib (n+1), -Fib (n)⟩ :=
-  begin
-  intro n, induction n with n ih,
-  show 1 = Zalpha.mk 1 0, refl,
-  show β*β^n = ⟨Fib (n+2), -Fib ((n+1))⟩,
-  rw ih,
-  have : β * ⟨Fib (n+1), -Fib (n)⟩ = ⟨Fib (n+2), -Fib (n+1)⟩,
-    by rw [β_mul_right, Fib.is_fib n]; simp,
-  rw this,
-  end
+theorem β_fib (n : ℕ) : β^n = ⟨Fib (n+1), -Fib (n)⟩ :=
+begin
+  induction n with n ih, { refl },
+  change β*β^n = ⟨Fib (n+2), -Fib (n+1)⟩,
+  rw ih, apply ext; simp [-add_comm, Fib.is_fib]; simp
+end
 
 def sqrt5 : ℤα := ⟨-1, 2⟩
 @[simp] lemma sqrt5_i : sqrt5.i = -1 := rfl
 @[simp] lemma sqrt5_r : sqrt5.r = 2 := rfl
-
 @[simp] lemma sqrt5_squared : sqrt5 ^ 2 = 5 := rfl
+
+/- conj (a + bα)
+ = a + bβ
+ = a + b(1 - α)
+ = (a + b) - bα
+-/
+def conj (z : ℤα) : ℤα := ⟨z.i + z.r, -z.r⟩
+
+/- norm (a + bα)
+ = (a + bα) (a + bβ)
+ = a² + ab(α + β) + b²αβ
+ = a² + ab - b²
+-/
+def norm (z : ℤα) : ℤ := z.i * z.i + z.i * z.r - z.r * z.r
+
+@[simp] lemma add_conj (z : ℤα) : z + conj z = 2 * z.i + z.r :=
+by apply ext; simp [conj, two_mul]
+
+@[simp] lemma mul_conj (z : ℤα) : z * conj z = norm z :=
+by apply ext; simp [conj, norm, mul_add, mul_comm]
+
+lemma norm_mul (z w : ℤα) : norm (z * w) = norm z * norm w :=
+by simp [norm, add_mul, mul_add]; ring
+
+local attribute [instance] nat.decidable_prime_1
+theorem prime_five : nat.prime 5 := dec_trivial
+
+lemma zero_of_norm_zero (z : ℤα) (H : norm z = 0) : z = 0 :=
+begin
+  unfold norm at H,
+  have H1 : (2 * z.i + z.r) * (2 * z.i + z.r) = 5 * z.r * z.r,
+  { suffices : 4 * (z.i * z.i + z.i * z.r - z.r * z.r) + 5 * z.r * z.r = 5 * z.r * z.r,
+    { rw ← this, ring },
+    simp [H] },
+  have H2 : (2 * z.i + z.r).nat_abs * (2 * z.i + z.r).nat_abs = 5 * z.r.nat_abs * z.r.nat_abs,
+  { have H2 := congr_arg int.nat_abs H1,
+    simp [int.nat_abs_mul, -add_comm] at H2,
+    exact H2 },
+  suffices : (2 * z.i + z.r).nat_abs = 0 ∧ z.r.nat_abs = 0,
+  { have H3 := int.eq_zero_of_nat_abs_eq_zero this.1,
+    have H4 := int.eq_zero_of_nat_abs_eq_zero this.2,
+    simp [H4, two_mul] at H3,
+    apply ext,
+    exact add_self_eq_zero.1 H3,
+    exact H4 },
+  generalize_hyp : (2 * z.i + z.r).nat_abs = p at H2 ⊢,
+  generalize_hyp : z.r.nat_abs = q at H2 ⊢,
+  clear H1 H z,
+  have H3 := nat.gcd_dvd_left p q,
+  have H4 := nat.gcd_dvd_right p q,
+  cases H3 with m H3,
+  cases H4 with n H4,
+  have H5 : nat.gcd p q = nat.gcd (nat.gcd p q * m) (nat.gcd p q * n),
+  { rw [← H3, ← H4] },
+  rw [nat.gcd_mul_left] at H5,
+  by_cases h : nat.gcd p q = 0,
+  { split,
+    exact nat.eq_zero_of_gcd_eq_zero_left h,
+    exact nat.eq_zero_of_gcd_eq_zero_right h },
+  generalize_hyp H1 : nat.gcd p q = H at h H3 H4 H5,
+  rw [H3, H4] at H2,
+  have H6 : H * 1 = H * nat.gcd m n,
+  { simp [H5.symm] },
+  have H7 := nat.pos_of_ne_zero h,
+  replace H6 := nat.eq_of_mul_eq_mul_left H7 H6,
+  have H8 : m * m = 5 * (n * n),
+  { suffices : (H * H) * (m * m) = (H * H) * (5 * (n * n)),
+    { exact nat.eq_of_mul_eq_mul_left (mul_pos H7 H7) this },
+    exact calc (H * H) * (m * m)
+      = _ : by ac_refl ... = _ : H2 ... = _ : by ac_refl },
+  have Hm : 5 ∣ m,
+  { refine (or_self _).1 (prime_five.dvd_mul.1 _),
+    rw H8, apply dvd_mul_right },
+  have Hn : 5 ∣ n,
+  { have := mul_dvd_mul Hm Hm,
+    refine (or_self _).1 (prime_five.dvd_mul.1 _),
+    rwa [H8, nat.mul_dvd_mul_iff_left (nat.succ_pos 4)] at this },
+  exfalso,
+  refine nat.not_coprime_of_dvd_of_dvd _ Hm Hn H6.symm,
+  exact dec_trivial
+end
+
+theorem zero_iff_norm_zero (z : ℤα) : z = 0 ↔ norm z = 0 :=
+⟨λ H, H.symm ▸ rfl, zero_of_norm_zero z⟩
+
+theorem eq_zero_or_eq_zero_of_mul_eq_zero (z w : ℤα)
+  (H : z * w = 0) : z = 0 ∨ w = 0 :=
+begin
+  rw [zero_iff_norm_zero, norm_mul] at H,
+  rw [zero_iff_norm_zero, zero_iff_norm_zero],
+  exact eq_zero_or_eq_zero_of_mul_eq_zero H
+end
+
+instance : integral_domain ℤα :=
+{ eq_zero_or_eq_zero_of_mul_eq_zero := eq_zero_or_eq_zero_of_mul_eq_zero,
+  zero_ne_one := dec_trivial,
+  .. Zalpha.comm_ring }
 
 end Zalpha

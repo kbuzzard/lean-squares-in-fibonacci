@@ -61,9 +61,3 @@ intros m n k,
 apply int.of_nat_inj,
 exact int.mod_add_mod ↑m ↑n ↑k,
 end 
-
-theorem nat.mod_add (a b m : ℕ) : (a % m + b % m) % m = (a + b) % m :=
-begin
-apply int.of_nat_inj,
-exact int.mod_add ↑a ↑b ↑m,
-end 
