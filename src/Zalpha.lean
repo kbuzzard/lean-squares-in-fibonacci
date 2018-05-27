@@ -227,6 +227,11 @@ by apply ext; simp [conj, two_mul]
 @[simp] lemma mul_conj (z : ℤα) : z * conj z = norm z :=
 by apply ext; simp [conj, norm, mul_add, mul_comm]
 
+instance : is_ring_hom conj :=
+{ map_add := λ z w, by apply ext; simp [conj],
+  map_mul := λ z w, by apply ext; simp [conj, add_mul, mul_add, -add_comm]; ac_refl,
+  map_one := rfl }
+
 lemma norm_mul (z w : ℤα) : norm (z * w) = norm z * norm w :=
 by simp [norm, add_mul, mul_add]; ring
 
