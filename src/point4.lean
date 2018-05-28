@@ -1,13 +1,16 @@
 import definitions
+import point3
 import data.nat.prime
 
 open nat
 
 /-- point 4, first part-/
 lemma luc_fib (m : ℕ) : luc (m + 3) = 2 * fib (m + 3) + fib m :=
-nat.rec_on_two m rfl rfl $ λ n ih1 ih2,
-show (luc (n + 3) + luc (nat.succ n + 3)) = 2 * (fib (n + 3) + fib (n + 4)) + (fib n + fib (n + 1)),
-by rw [ih1, ih2, mul_add]; simp
+int.coe_nat_inj $ by rw [int.coe_nat_add, int.coe_nat_mul];
+  rw [← fib_down, ← fib_down, ← luc_down, Luc, Fib, Fib];
+  rw [α_Fib, α_Fib, β_Fib]; dsimp;
+  rw [add_neg_cancel_right];
+  repeat { rw Fib_add_one_add_one }; simp [add_mul]
 
 lemma fib_succ_coprime (m : ℕ) : coprime (fib (m + 1)) (fib m) :=
 nat.rec_on m dec_trivial $ λ n ih,

@@ -1,8 +1,4 @@
-import algebra.group_power
-import definitions
-import data.nat.gcd
-import data.nat.prime
-import number_theory.pell
+import mathlib_someday
 import tactic.ring
 
 -- Z[alpha] where alpha := (1 + sqrt(5))/2, representing the minimal ring
@@ -16,22 +12,6 @@ structure Zalpha : Type :=
 (i : ℤ) (r : ℤ)
 
 notation `ℤα` := Zalpha
-
-instance nonsquare_five : zsqrtd.nonsquare 5 :=
-⟨λ n, nat.cases_on n dec_trivial $ λ n,
-  nat.cases_on n dec_trivial $ λ n,
-  nat.cases_on n dec_trivial $ λ n,
-  ne_of_lt $ calc 5 < 3 * 3 : dec_trivial
-    ... ≤ 3 * (n+3) : nat.mul_le_mul_left _ (nat.le_add_left _ _)
-    ... ≤ (n+3) * (n+3) : nat.mul_le_mul_right _ (nat.le_add_left _ _)⟩
-
-@[simp] lemma is_ring_hom.map_int {α : Type*} {β : Type*}
-  [ring α] [ring β] (f : α → β)
-  [is_ring_hom f] (i : ℤ) : f i = i :=
-int.induction_on i
-  (is_ring_hom.map_zero f)
-  (λ i H, by simp [is_ring_hom.map_add f, is_ring_hom.map_one f, H])
-  (λ i H, by simp [is_ring_hom.map_add f, is_ring_hom.map_neg f, is_ring_hom.map_one f, H])
 
 namespace Zalpha
 
@@ -139,9 +119,6 @@ by refine
 @[simp] lemma coe_nat_i (r : ℕ) : (↑r : ℤα).i = r := by simp
 @[simp] lemma coe_nat_r (r : ℕ) : (↑r : ℤα).r = 0 := by simp
 
-@[simp] lemma of_fib_r (n : ℕ) : (↑(fib n) : ℤα).r = 0 := by simp
-@[simp] lemma of_fib_i (n : ℕ) : (↑(fib n) : ℤα).i = fib n := by simp
-
 @[simp] theorem of_int_inj {z w : ℤ} : (z : ℤα) = w ↔ z = w :=
 ⟨eq.substr (of_int_eq_coe z) $ eq.substr (of_int_eq_coe w) (congr_arg i), congr_arg _⟩
 
@@ -193,26 +170,8 @@ lemma α_sqr : α^2 = α + 1 := rfl
 theorem α_mul_right (z : ℤα) : α * z = ⟨z.r, z.i + z.r⟩ :=
 by apply ext; simp
 
-theorem α_fib (n : ℕ) : α^(n+1) = ⟨Fib n, Fib (n+1)⟩ :=
-begin
-  induction n with n ih, { refl },
-  change α*α^(n + 1) = ⟨Fib (n+1), Fib (n+2)⟩,
-  rw ih, apply ext; simp [-add_comm, Fib.is_fib]
-end
-
 theorem β_mul_right (z : ℤα) : β * z = ⟨z.i - z.r, -z.i⟩ :=
 by apply ext; simp
-
--- #eval Fib (-1)
--- #eval β * β
--- #eval β * β * β * β * β
-
-theorem β_fib (n : ℕ) : β^n = ⟨Fib (n+1), -Fib (n)⟩ :=
-begin
-  induction n with n ih, { refl },
-  change β*β^n = ⟨Fib (n+2), -Fib (n+1)⟩,
-  rw ih, apply ext; simp [-add_comm, Fib.is_fib]; simp
-end
 
 def sqrt5 : ℤα := ⟨-1, 2⟩
 @[simp] lemma sqrt5_i : sqrt5.i = -1 := rfl
@@ -354,5 +313,27 @@ have H : f α * f α - f α - 1 = 0,
       rw [is_ring_hom.map_int f, is_ring_hom.map_int f];
       rw [is_ring_hom.map_add conj, is_ring_hom.map_mul conj];
       rw [is_ring_hom.map_int conj, is_ring_hom.map_int conj]; refl)
+
+namespace units
+
+def α : units ℤα :=
+⟨α, -β, rfl, rfl⟩
+
+@[simp] lemma α_coe : (↑α : ℤα) = Zalpha.α := rfl
+@[simp] lemma α_inv_coe : (↑α⁻¹ : ℤα) = -Zalpha.β := rfl
+
+def β : units ℤα :=
+⟨β, -α, rfl, rfl⟩
+
+@[simp] lemma β_coe : (↑β : ℤα) = Zalpha.β := rfl
+@[simp] lemma β_inv_coe : (↑β⁻¹ : ℤα) = -Zalpha.α := rfl
+
+@[simp] lemma α_mul_β : α * β = -1 := rfl
+@[simp] lemma β_mul_α : β * α = -1 := rfl
+
+instance : has_repr (units ℤα) :=
+⟨λ u, repr (↑u : ℤα)⟩
+
+end units
 
 end Zalpha
