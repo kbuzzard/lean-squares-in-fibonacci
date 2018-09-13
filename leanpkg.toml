@@ -5,4 +5,5 @@ lean_version = "nightly-2018-04-20"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover/mathlib", rev = "6811f1399cfff3506d2e8803576d9142659e4f73"}
+lean-squares-in-fibonacci = {git = "https://github.com/kbuzzard/lean-squares-in-fibonacci", rev = "beea5fd65e8ae4a7b11eaa1fdd768f5e1d05222b"}
+mathlib = {git = "https://github.com/leanprover/mathlib", rev = "36dd78ee328b93f7bbf36b001807060efb562822"}
