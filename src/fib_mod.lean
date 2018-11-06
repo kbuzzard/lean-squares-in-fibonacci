@@ -1,5 +1,5 @@
 import definitions 
-import data.list 
+import data.list.basic
 
 definition fib_mod (m : ℕ) : ℕ → ℕ 
 | 0 := 0 % m
