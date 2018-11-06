@@ -1,65 +1,32 @@
 import definitions
+import point3
 
 -- 2F(m+n) = F(m) L(n) + L(m) F(n)
+lemma two_mul_Fib_add (m n : ℤ) : 2 * Fib (m + n) = Fib m * Luc n + Luc m * Fib n :=
+by rw [Fib, Fib, Fib, Luc, Luc, gpow_add, units.mul_coe, Zalpha.mul_r, two_mul];
+  rw [α_Fib, α_Fib, β_Fib, β_Fib];
+  have Hm := Fib_add_two (m-1);
+  have Hn := Fib_add_two (n-1);
+  rw [bit0, ← add_assoc, sub_add_cancel] at Hm Hn;
+  simp [Hm, Hn, mul_add, add_mul]
+
 lemma two_mul_fib_add (m n : ℕ) : 2 * fib (m + n) = fib m * luc n + luc m * fib n :=
-nat.rec_on_two n (by rw [mul_comm]; refl)
-  (nat.rec_on_two m rfl rfl $ λ n ih1 ih2,
-    show 2 * (fib (n+1) + fib (nat.succ n+1))
-      = (fib n + fib (nat.succ n)) * luc 1
-        + (luc n + luc (nat.succ n)) * fib 1,
-    by rw [mul_add, ih1, ih2, add_mul, add_mul];
-      rw [add_assoc, add_left_comm (luc n * fib 1), add_assoc])
- (λ n ih1 ih2,
-    show 2 * (fib (m + n) + fib (m + nat.succ n))
-      = fib m * (luc n + luc (nat.succ n))
-        + luc m * (fib n + fib (nat.succ n)),
-    by rw [mul_add, ih1, ih2, mul_add, mul_add];
-      rw [add_assoc, add_left_comm (luc m * fib n), add_assoc])
-
--- L(m+1)^2 + 5(-1)^m = L(m) L(m+2)
-lemma luc_mul_self (m : ℕ) : luc (m+1) * luc (m+1) + 5*((m+1)%2) = luc m * luc (m+2) + 5*(m%2) :=
-nat.rec_on m rfl $ λ n,
-assume ih : luc (n+1) * luc (n+1) + 5*((n+1)%2) = luc n * luc (n+2) + 5*(n%2),
-calc  (luc n + luc (n+1)) * luc (n+2) + 5*((n+2)%2)
-    = luc n * luc (n+2) + 5*(n%2) + luc (n+1) * luc (n+2) : by rw [nat.add_mod_right, add_mul, add_right_comm]
-... = luc (n+1) * (luc (n+1) + luc (n+2)) + 5*((n+1)%2) : by rw [← ih, mul_add, add_right_comm]
-
--- L(2m)   + 2(-1)^m = L(m)^2 and
--- L(2m+1) +  (-1)^m = L(m) L(m+1)
-lemma luc_mul_base (m : ℕ) :
-  luc (2*m) + 2*((m+1)%2) = luc m * luc m + 2*(m%2) ∧
-  luc (2*m+1) + 1*((m+1)%2) = luc m * luc (m+1) + 1*(m%2) :=
-nat.rec_on m ⟨rfl, rfl⟩ $ λ n ih, and.intro
-  (suffices luc (2*n) + luc (2*n+1) + 2*((n+2)%2) + 3*((n+1)%2) = luc (n+1) * luc (n+1) + 2*((n+1)%2) + 3*((n+1)%2),
-      from nat.add_right_cancel this,
-    calc  luc (2*n) + luc (2*n+1) + 2*((n+2)%2) + 3*((n+1)%2)
-        = luc (2*n) + luc (2*n+1) + (2+1)*((n+1)%2) + 2*((n+2)%2) : add_right_comm _ _ _
-    ... = luc (2*n) + luc (2*n+1) + 2*((n+1)%2) + 1*((n+1)%2) + 2*(n%2) : by rw [add_mul, ← add_assoc, nat.add_mod_right]
-    ... = luc n * luc n + luc n * luc (n+1) + 2*(n%2) + 1*(n%2) + 2*(n%2) : by rw [add_right_comm (luc (2*n)), ih.1, add_assoc (luc n * luc n + 2*(n%2)), ih.2]; ac_refl
-    ... = luc n * luc n + luc n * luc (n+1) + 5*(n%2) : by rw [add_assoc, add_assoc, ← add_mul, ← add_mul]
-    ... = luc n * luc (n+2) + 5*(n%2) : by rw ← mul_add; refl
-    ... = luc (n+1) * luc (n+1) + 2*((n+1)%2) + 3*((n+1)%2) : by rw [add_assoc, ← add_mul, ← luc_mul_self])
-  (suffices luc (2*n+1) + (luc (2*n) + luc (2*n+1)) + 1*((n+2)%2) + 4*((n+1)%2) = luc (n+1) * (luc n + luc (n+1)) + 1*((n+1)%2) + 4*((n+1)%2),
-      from nat.add_right_cancel this,
-    calc  luc (2*n+1) + (luc (2*n) + luc (2*n+1)) + 1*((n+2)%2) + 4*((n+1)%2)
-        = luc (2*n+1) + (luc (2*n) + luc (2*n+1)) + 1*((n+2)%2) + (1*((n+1)%2) + 2*((n+1)%2) + 1*((n+1)%2)) : by rw [← add_mul, ← add_mul]
-    ... = (luc (2*n+1) + 1*((n+1)%2)) + (luc (2*n) + 2*((n+1)%2)) + (luc (2*n+1) + 1*((n+1)%2)) + 1*((n+2)%2) : by ac_refl
-    ... = luc (n+1) * luc n + (luc n * (luc n + luc (n+1)) + (1*(n%2) + 2*(n%2) + 1*(n%2) + 1*(n%2))) : by rw [ih.1, ih.2, nat.add_mod_right, mul_add]; ac_refl
-    ... = luc (n+1) * luc n + (luc n * luc (n+2) + 5*(n%2)) : by rw [← add_mul, ← add_mul, ← add_mul]; refl
-    ... = luc (n+1) * luc n + (luc (n+1) * luc (n+1) + (1+4)*((n+1)%2)) : by rw ← luc_mul_self
-    ... = luc (n+1) * (luc n + luc (n+1)) + 1*((n+1)%2) + 4*((n+1)%2) : by rw [mul_add, add_mul, add_assoc, add_assoc])
-
--- L(2*m+n) + L(n) (-1)^m = L(m) L(m+n)
-lemma luc_mul (m n : ℕ) : luc (2*m+n) + luc n * ((m+1)%2)
-  = luc m * luc (m+n) + luc n * (m%2) :=
-nat.rec_on_two n (luc_mul_base m).1 (luc_mul_base m).2 $ λ n ih1 ih2,
-show (luc (2*m+n) + luc (2*m+nat.succ n)) + (luc n + luc (n+1)) * ((m+1)%2) = luc m * (luc (m+n) + luc (m+nat.succ n)) + (luc n + luc (nat.succ n)) * (m%2),
-by rw [add_mul, add_assoc, add_left_comm (luc (2*m+nat.succ n)), ← add_assoc, ih1, ih2, mul_add, add_mul]; ac_refl
+int.coe_nat_inj $ by rw [int.coe_nat_add, int.coe_nat_mul, int.coe_nat_mul, int.coe_nat_mul];
+  rw [← fib_down, ← fib_down, ← fib_down, ← luc_down, ← luc_down, ← two_mul_Fib_add]; refl
 
 -- L(4n) + 2 = L(2n)^2
+lemma Luc_four_mul (n : ℤ) : Luc (4 * n) = Luc (2 * n) * Luc (2 * n) - 2 :=
+Zalpha.of_int_inj.1 $ by have := Luc_αβ; simp at this;
+  simp [this, add_mul, mul_add];
+  rw [← units.mul_coe, ← units.mul_coe, ← units.mul_coe, ← units.mul_coe];
+  rw [← mul_gpow, ← mul_gpow, ← mul_gpow, ← mul_gpow]; simp;
+  rw [gpow_mul (-1 : units ℤα)];
+  have : (-1 : units ℤα)^(2:ℤ) = 1 := rfl;
+  simp [this]; rw [bit0, add_mul, gpow_add, gpow_add, mul_gpow, mul_gpow]; ring
+
 lemma luc_four_mul (n : ℕ) : luc (4 * n) + 2 = luc (2 * n) * luc (2 * n) :=
-have H : _ := luc_mul (2*n) 0,
-by simp at *; rw [← H, ← mul_assoc]; refl
+int.coe_nat_inj $ by simp; rw [← luc_down, ← luc_down];
+  change 1 + (1 + Luc (4 * n)) = _; rw [Luc_four_mul]; ring
 
 -- F(2n) = F(n) L(n)
 lemma fib_two_mul (n : ℕ) : fib (2 * n) = fib n * luc n :=

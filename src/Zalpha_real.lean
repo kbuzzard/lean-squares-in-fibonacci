@@ -1,4 +1,4 @@
-import analysis.real data.real.irrational Zalpha linear_algebra.basic
+import data.real.irrational Zalpha linear_algebra.basic
 import data.real.basic data.nat.prime
 import tactic.norm_num tactic.ring
 
@@ -199,7 +199,7 @@ lemma to_real.inj : ∀ a b, to_real a = to_real b ↔ a = b :=
   intros, constructor, exact @to_real.injective a b, intro h, rw h
   end
 
-instance : integral_domain Zalpha :=
+/-instance : integral_domain Zalpha :=
 { eq_zero_or_eq_zero_of_mul_eq_zero :=
   begin
   intros a b h,
@@ -214,4 +214,4 @@ instance : integral_domain Zalpha :=
   end,
   zero_ne_one := dec_trivial,
   ..Zalpha.comm_ring
-}
+}-/

@@ -1,5 +1,5 @@
-import algebra.group_power
-import definitions
+import mathlib_someday
+import tactic.ring
 
 -- Z[alpha] where alpha := (1 + sqrt(5))/2, representing the minimal ring
 -- (with addition, subtraction, and multiplication) containing the roots
@@ -7,6 +7,7 @@ import definitions
 -- (with beta < alpha)
 --
 -- i as in int, r as in root
+@[derive decidable_eq]
 structure Zalpha : Type :=
 (i : ℤ) (r : ℤ)
 
@@ -17,7 +18,7 @@ namespace Zalpha
 @[simp] theorem eta : ∀ z : ℤα, Zalpha.mk z.i z.r = z
 | ⟨a, b⟩ := rfl
 
-theorem ext : ∀ {z w : ℤα}, z.i = w.i → z.r = w.r → z = w
+@[extensionality] theorem ext : ∀ {z w : ℤα}, z.i = w.i → z.r = w.r → z = w
 | ⟨zr, zi⟩ ⟨_, _⟩ rfl rfl := rfl
 
 theorem ext_iff {z w : ℤα} : z = w ↔ z.i = w.i ∧ z.r = w.r :=
@@ -95,52 +96,16 @@ ext_iff.2 $ by simp
 @[simp] lemma re_add_im (z : ℤα) : (of_int z.i : ℤα) + of_int z.r * α = z :=
 ext_iff.2 $ by simp
 
-instance : decidable_eq ℤα :=
-  λ a b, if h : (a.1 = b.1 ∧ a.2 = b.2)
-    then is_true (iff.mpr ext_iff h)
-    else is_false (iff.mpr (by rw ext_iff) h)
-
 instance : comm_ring ℤα :=
-{ add            := (+),
-  add_assoc      := by intros; apply ext; simp; simp,
-  zero           := 0,
-  zero_add       := by intros; apply ext; simp; simp,
-  add_zero       := by intros; apply ext; simp; simp,
-  neg            := has_neg.neg,
-  add_left_neg   := by intros; apply ext; simp; simp,
-  add_comm       := by intros; apply ext; simp; simp,
-  mul            := (*),
-  mul_assoc      :=
-    begin
-    intros, apply ext,
-    simp [left_distrib, right_distrib, mul_assoc],
-    simp [left_distrib, right_distrib, mul_assoc],
-    end,
-  one            := 1,
-  one_mul        := by intros; apply ext; simp; simp,
-  mul_one        := by intros; apply ext; simp; simp,
-  left_distrib   :=
-    begin
-    intros, apply ext,
-    simp [left_distrib],
-    simp [left_distrib],
-    end,
-  right_distrib  :=
-    begin
-    intros, apply ext,
-    simp [right_distrib],
-    simp [right_distrib],
-    end,
-  mul_comm := by intros; apply ext; simp; simp [mul_comm],
-  /-
-  eq_zero_or_eq_zero_of_mul_eq_zero :=
-    begin
-    intros a b h, rw ext_iff at h, simp at h,
-    by_contradiction h', -- rw [@ext_iff a, @ext_iff b] at h', simp at h',
-    rw [not_or_distrib] at h',
-    end
-  -/
-}
+by refine
+{ add      := (+),
+  zero     := 0,
+  neg      := has_neg.neg,
+  mul      := (*),
+  one      := 1,
+  mul_comm := by intros; apply ext; simp [mul_comm],
+  ..
+}; { intros; apply ext; simp [left_distrib, right_distrib, mul_assoc] }
 
 @[simp] lemma comm_ring_zero : comm_ring.zero ℤα = 0 := rfl
 
@@ -149,19 +114,16 @@ instance : comm_ring ℤα :=
 @[simp] lemma coe_int_i (r : ℤ) : (r : ℤα).i = r := by simp
 @[simp] lemma coe_int_r (r : ℤ) : (r : ℤα).r = 0 := by simp
 
-@[simp] lemma of_nat_eq_coe (r : ℕ) : ↑ r = of_nat r :=
+@[simp] lemma of_nat_eq_coe (r : ℕ) : ↑r = of_nat r :=
   eq.symm (nat.eq_cast of_nat rfl rfl (λ a b, rfl) r)
 @[simp] lemma coe_nat_i (r : ℕ) : (↑r : ℤα).i = r := by simp
 @[simp] lemma coe_nat_r (r : ℕ) : (↑r : ℤα).r = 0 := by simp
-
-@[simp] lemma of_fib_r (n : ℕ) : (↑ (fib n) : ℤα).r = 0 := by simp
-@[simp] lemma of_fib_i (n : ℕ) : (↑ (fib n) : ℤα).i = fib n := by simp
 
 @[simp] theorem of_int_inj {z w : ℤ} : (z : ℤα) = w ↔ z = w :=
 ⟨eq.substr (of_int_eq_coe z) $ eq.substr (of_int_eq_coe w) (congr_arg i), congr_arg _⟩
 
 @[simp] theorem of_int_eq_zero {z : ℤ} : (z : ℤα) = 0 ↔ z = 0 :=
-  by show (z : ℤα) = ↑ 0 ↔ z = ↑ 0; exact @of_int_inj z 0
+  by show (z : ℤα) = ↑0 ↔ z = ↑0; exact @of_int_inj z 0
 @[simp] theorem of_int_ne_zero {z : ℤ} : (z : ℤα) ≠ 0 ↔ z ≠ 0 :=
   not_congr of_int_eq_zero
 
@@ -169,6 +131,9 @@ instance : comm_ring ℤα :=
   eq.symm (nat.eq_cast of_nat rfl rfl (λ a b, rfl) r)
 @[simp] lemma nat_cast_i (r : ℕ) : (nat.cast r : ℤα).i = r := by simp
 @[simp] lemma nat_cast_r (r : ℕ) : (nat.cast r : ℤα).i = r := by simp
+
+@[simp] lemma re_add_im_coe (z : ℤα) : (z.i : ℤα) + z.r * α = z :=
+ext_iff.2 $ by simp
 
 /- Extra instances to short-circuit type class resolution -/
 instance : has_sub ℤα            := by apply_instance
@@ -196,66 +161,179 @@ lemma coe_int_add {a b : ℤ} : (of_int (a + b) : ℤα) = of_int a + of_int b :
 lemma coe_int_neg {a : ℤ} : -of_int a = of_int (-a) := rfl
 @[simp]
 lemma coe_nat_add {a b : ℕ} : (of_int (↑(a + b) : ℤ) : ℤα) = of_int ↑a + of_int ↑b :=
-  begin
-  rw [int.coe_nat_add, @coe_int_add ↑a ↑b],
-  end
+by rw [int.coe_nat_add, @coe_int_add ↑a ↑b]
 
 @[simp] lemma αβsum : α + β = 1 := rfl
 @[simp] lemma αβprod : α * β = -1 := rfl
 lemma α_sqr : α^2 = α + 1 := rfl
 
-theorem α_mul_right : ∀ (z : ℤα), α * z = ⟨z.r, z.i + z.r⟩ :=
-  begin
-  intro z, apply ext, simp, simp,
-  end
+theorem α_mul_right (z : ℤα) : α * z = ⟨z.r, z.i + z.r⟩ :=
+by apply ext; simp
 
-theorem α_fib : ∀ (n : ℕ), α^(n+1) = ⟨Fib n, Fib (n+1)⟩ :=
-  begin
-  intro n, induction n with n ih,
-  show α = Zalpha.mk 0 1, refl,
-  show α*α^(n + 1) = ⟨Fib (n+1), Fib (n+2)⟩,
-  rw ih,
-  have : α * ⟨Fib n, Fib (n+1)⟩ = ⟨Fib (n+1), Fib (n+2)⟩,
-  { simp [α_mul_right],
-    show Fib ↑n + Fib (1 + ↑n) = Fib (2 + ↑n),
-    rw [add_comm _ ↑n, add_comm _ ↑n],
-    rw [← int.coe_nat_succ n],
-    show Fib ↑n + Fib ↑(n+1) = Fib (↑n + 2),
-    show Fib ↑n + Fib ↑(n+1) = Fib (↑n + 1 + 1),
-    rw [← int.coe_nat_succ n],
-    rw [← int.coe_nat_succ (nat.succ n)],
-    rw [fib_down n, fib_down (n+1), fib_down (n+2)],
-    rw [← int.coe_nat_add],
-    apply (int.of_nat_eq_of_nat_iff (fib n + fib (n + 1)) (fib (n+2))).2,
-    refl,
-  },
-  rw this,
-  end
-
-theorem β_mul_right : ∀ (z : ℤα), β * z = ⟨z.i - z.r, -z.i⟩ :=
-  begin
-  intro z, apply ext, simp, simp,
-  end
-
--- #eval Fib (-1)
--- #eval β * β
--- #eval β * β * β * β * β
-
-theorem β_fib : ∀ (n : ℕ), β^n = ⟨Fib (n+1), -Fib (n)⟩ :=
-  begin
-  intro n, induction n with n ih,
-  show 1 = Zalpha.mk 1 0, refl,
-  show β*β^n = ⟨Fib (n+2), -Fib ((n+1))⟩,
-  rw ih,
-  have : β * ⟨Fib (n+1), -Fib (n)⟩ = ⟨Fib (n+2), -Fib (n+1)⟩,
-    by rw [β_mul_right, Fib.is_fib n]; simp,
-  rw this,
-  end
+theorem β_mul_right (z : ℤα) : β * z = ⟨z.i - z.r, -z.i⟩ :=
+by apply ext; simp
 
 def sqrt5 : ℤα := ⟨-1, 2⟩
 @[simp] lemma sqrt5_i : sqrt5.i = -1 := rfl
 @[simp] lemma sqrt5_r : sqrt5.r = 2 := rfl
-
 @[simp] lemma sqrt5_squared : sqrt5 ^ 2 = 5 := rfl
+
+-- multiply by two, i.e. (a+bα) ↦ 2a+b(1+√5)
+def to_Zsqrt5 (z : ℤα) : ℤ√5 :=
+⟨2*z.i + z.r, z.r⟩
+
+@[simp] lemma to_Zsqrt5_zero : (0:ℤα).to_Zsqrt5 = 0 := rfl
+
+@[simp] lemma to_Zsqrt5_add (z w : ℤα) :
+  (z + w).to_Zsqrt5 = z.to_Zsqrt5 + w.to_Zsqrt5 :=
+by simp [to_Zsqrt5, mul_add]
+
+@[simp] lemma to_Zsqrt5_mul (z w : ℤα) :
+  (z * w).to_Zsqrt5 * 2 = z.to_Zsqrt5 * w.to_Zsqrt5 :=
+by rw [zsqrtd.ext, mul_two]; unfold to_Zsqrt5; split; simp; ring
+
+theorem to_Zsqrt5_inj : function.injective to_Zsqrt5 :=
+begin
+  intros z w H,
+  unfold to_Zsqrt5 at H,
+  cases zsqrtd.ext.1 H with H1 H2,
+  dsimp at H1 H2,
+  rw [H2, add_right_cancel_iff] at H1,
+  have H3 := eq_of_mul_eq_mul_left dec_trivial H1,
+  apply ext; assumption
+end
+
+theorem eq_zero_of_to_Zsqrt5_eq_zero (z : ℤα)
+  (H : z.to_Zsqrt5 = 0) : z = 0 :=
+to_Zsqrt5_inj H
+
+/- conj (a + bα)
+ = a + bβ
+ = a + b(1 - α)
+ = (a + b) - bα
+-/
+def conj (z : ℤα) : ℤα := ⟨z.i + z.r, -z.r⟩
+
+/- norm (a + bα)
+ = (a + bα) (a + bβ)
+ = a² + ab(α + β) + b²αβ
+ = a² + ab - b²
+-/
+def norm (z : ℤα) : ℤ := z.i * z.i + z.i * z.r - z.r * z.r
+
+@[simp] lemma add_conj (z : ℤα) : z + z.conj = 2 * z.i + z.r :=
+by apply ext; simp [conj, two_mul]
+
+@[simp] lemma mul_conj_eq_norm (z : ℤα) : z * z.conj = z.norm :=
+by apply ext; simp [conj, norm, mul_add, mul_comm]
+
+@[simp] lemma conj_conj (z : ℤα) : z.conj.conj = z :=
+by apply ext; simp [conj]
+
+instance : is_ring_hom conj :=
+{ map_add := λ z w, by apply ext; simp [conj],
+  map_mul := λ z w, by apply ext; simp [conj, add_mul, mul_add, -add_comm]; ac_refl,
+  map_one := rfl }
+
+@[simp] lemma conj_zero : (0:ℤα).conj = 0 :=
+is_ring_hom.map_zero conj
+
+lemma conj_bijective : function.bijective conj :=
+⟨λ x y H, by rw [← x.conj_conj, H, y.conj_conj],
+  λ x, ⟨x.conj, conj_conj x⟩⟩
+
+lemma eq_zero_of_conj_eq_zero (z : ℤα) (H : z.conj = 0) : z = 0 :=
+conj_bijective.1 H
+
+lemma to_Zsqrt5_conj (z : ℤα) : z.conj.to_Zsqrt5 = z.to_Zsqrt5.conj :=
+by rw zsqrtd.ext; split; simp [conj, to_Zsqrt5, two_mul]
+
+lemma norm_mul (z w : ℤα) : (z * w).norm = z.norm * w.norm :=
+by simp [norm, add_mul, mul_add]; ring
+
+instance : decidable_linear_ordered_comm_ring ℤα :=
+{ le := λ z w, to_Zsqrt5 z ≤ to_Zsqrt5 w,
+  le_refl := λ z, show to_Zsqrt5 z ≤ to_Zsqrt5 z, from le_refl _,
+  le_trans := λ z₁ z₂ z₃ H12 H23, show to_Zsqrt5 z₁ ≤ to_Zsqrt5 z₃, from le_trans H12 H23,
+  le_antisymm := λ z w Hzw Hwz, to_Zsqrt5_inj $ le_antisymm Hzw Hwz,
+  lt := λ z w, to_Zsqrt5 z < to_Zsqrt5 w,
+  lt_iff_le_not_le := λ z w, show to_Zsqrt5 z < to_Zsqrt5 w ↔ _, from lt_iff_le_not_le,
+  add_le_add_left := λ z₁ z₂ H12 z₃, calc _ = _ : to_Zsqrt5_add _ _
+    ... ≤ _ : zsqrtd.add_le_add_left _ _ H12 _
+    ... = _ : (to_Zsqrt5_add _ _).symm,
+  add_lt_add_left := λ z₁ z₂ H12 z₃, calc _ = _ : to_Zsqrt5_add _ _
+    ... < _ : zsqrtd.add_lt_add_left _ _ H12 _
+    ... = _ : (to_Zsqrt5_add _ _).symm,
+  mul_nonneg := λ z w (Hz : to_Zsqrt5 z ≥ 0) (Hw : to_Zsqrt5 w ≥ 0),
+    show to_Zsqrt5 (z * w) ≥ 0,
+    from nonneg_of_mul_nonneg_right
+      (trans_rel_left _ (mul_nonneg Hz Hw) (to_Zsqrt5_mul z w).symm)
+      (add_pos zero_lt_one zero_lt_one),
+  mul_pos := λ z w (Hz : to_Zsqrt5 z > 0) (Hw : to_Zsqrt5 w > 0),
+    show to_Zsqrt5 (z * w) > 0,
+    from pos_of_mul_pos_right
+      (trans_rel_left _ (mul_pos Hz Hw) (to_Zsqrt5_mul z w).symm)
+      (add_nonneg zero_le_one zero_le_one),
+  le_total := λ z w, zsqrtd.le_total _ _,
+  zero_lt_one := show 0 < to_Zsqrt5 1, from dec_trivial,
+  zero_ne_one := dec_trivial,
+  decidable_le := λ z w, show decidable (to_Zsqrt5 z ≤ to_Zsqrt5 w), by apply_instance,
+  .. Zalpha.comm_ring }
+
+lemma zero_of_norm_zero (z : ℤα) (H : z.norm = 0) : z = 0 :=
+have H1 : z * z.conj = 0,
+  by rw [mul_conj_eq_norm, H]; refl,
+(eq_zero_or_eq_zero_of_mul_eq_zero H1).cases_on
+  id z.eq_zero_of_conj_eq_zero
+
+theorem zero_iff_norm_zero (z : ℤα) : z = 0 ↔ z.norm = 0 :=
+⟨λ H, H.symm ▸ rfl, zero_of_norm_zero z⟩
+
+instance : integral_domain ℤα := by apply_instance
+
+theorem char_eq (z : ℤα) (H : z * z - z - 1 = 0) : z = α ∨ z = β :=
+have H1 : (z - α) * (z - β) = 0,
+  by rw [← H, α, β]; ring,
+(eq_zero_or_eq_zero_of_mul_eq_zero H1).cases_on
+  (or.inl ∘ eq_of_sub_eq_zero)
+  (or.inr ∘ eq_of_sub_eq_zero)
+
+theorem gal (f : ℤα → ℤα) [is_ring_hom f] : f = id ∨ f = conj :=
+have H : f α * f α - f α - 1 = 0,
+  by rw [← is_ring_hom.map_mul f, ← is_ring_hom.map_sub f];
+    rw [← is_ring_hom.map_one f]; apply sub_self,
+(char_eq (f α) H).cases_on
+  (assume H : f α = α, or.inl $ funext $ show ∀ z, f z = z,
+    from λ z, by rw [← re_add_im_coe z];
+      rw [is_ring_hom.map_add f, is_ring_hom.map_mul f, H];
+      rw [is_ring_hom.map_int f, is_ring_hom.map_int f])
+  (assume H : f α = β, or.inr $ funext $ show ∀ z, f z = conj z,
+    from λ z, by rw [← re_add_im_coe z];
+      rw [is_ring_hom.map_add f, is_ring_hom.map_mul f, H];
+      rw [is_ring_hom.map_int f, is_ring_hom.map_int f];
+      rw [is_ring_hom.map_add conj, is_ring_hom.map_mul conj];
+      rw [is_ring_hom.map_int conj, is_ring_hom.map_int conj]; refl)
+
+namespace units
+
+def α : units ℤα :=
+⟨α, -β, rfl, rfl⟩
+
+@[simp] lemma α_coe : (↑α : ℤα) = Zalpha.α := rfl
+@[simp] lemma α_inv_coe : (↑α⁻¹ : ℤα) = -Zalpha.β := rfl
+
+def β : units ℤα :=
+⟨β, -α, rfl, rfl⟩
+
+@[simp] lemma β_coe : (↑β : ℤα) = Zalpha.β := rfl
+@[simp] lemma β_inv_coe : (↑β⁻¹ : ℤα) = -Zalpha.α := rfl
+
+@[simp] lemma α_mul_β : α * β = -1 := rfl
+@[simp] lemma β_mul_α : β * α = -1 := rfl
+
+instance : has_repr (units ℤα) :=
+⟨λ u, repr (↑u : ℤα)⟩
+
+end units
 
 end Zalpha

@@ -1,7 +1,8 @@
-import definitions 
-import fib_mod 
+import definitions
+import fib_mod
+import data.int.modeq
 
-lemma luc_odd_of_not_3_div (n : ℕ) : luc (3 * n + 1) % 2 = 1 ∧ 
+lemma luc_odd_of_not_3_div (n : ℕ) : luc (3 * n + 1) % 2 = 1 ∧
 luc (3 * n + 2) % 2 = 1 :=
 begin
   split,
@@ -13,9 +14,8 @@ begin
     rw luc_mod_2,
     simp,refl,
   }
-end 
-
---Prove that v m is not a multiple of 3 if 4 divides m. 
+end
+--Prove that v m is not a multiple of 3 if 4 divides m.
 lemma luc_coprime_to_3_of_4_div (n : ℕ) : luc (4 * n) % 3 ≠ 0 :=
 begin
   rw ←luc_mod_eq,
@@ -23,21 +23,47 @@ begin
   -- cases n even or odd
   --case on  (n % 2 = 1)
   suffices H : n % 2 = 0 ∨ n % 2 = 1,
-  cases H, 
+  cases H,
   { -- n % 2 = 0
     suffices H2 : 4 * n % 8 = 0,
       rw H2,
       exact dec_trivial,
       change n ≡ 0 [MOD 2] at H,
       show 4 * n ≡ 0 [MOD 8],
-      
-      sorry,
-    --have H' : 
+      have a : 2∣n, from nat.modeq.modeq_zero_iff.1 H,
+      rw nat.modeq.modeq_zero_iff,
+      change 4*2 ∣ 4 * n,
+      have q : 4 > 0, by norm_num,
+      rw nat.mul_dvd_mul_iff_left q,
+      exact a,
   },
-  { sorry },
-  sorry, -- H
-end 
+  {
+  suffices H1: 4 * n % 8 = 4,
+  rw H1,
+  exact dec_trivial,
+  apply (int.modeq.coe_nat_modeq_iff (4*n) 4 8).1,
+  rw int.coe_nat_mul,
+  apply @int.modeq.modeq_mul_left' 2 n 1 4 dec_trivial,
+  apply (int.modeq.coe_nat_modeq_iff n 1 2).2,
+  exact H,
+  },
+  generalize H: n % 2 = k,
+   have q2: k < 2,
+  {
+    have q3: 2 > 0, from dec_trivial,
+    have q4 : n % 2 < 2, from nat.mod_lt n q3,
+    rw H at q4,
+    exact q4,
+  },
+  {
+    clear H,
+    revert q2 k,
+    exact dec_trivial,
+  },
 
+end
+#check nat.mul_dvd_mul_iff_left
+#check int.coe_nat_dvd
 --n : ℕ,
 --H : n % 2 = 0
 --⊢ 4 * n % 8 = 0

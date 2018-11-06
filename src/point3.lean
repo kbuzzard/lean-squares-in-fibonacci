@@ -1,51 +1,35 @@
-import definitions Zalpha
+import definitions
 
 open Zalpha
 
-theorem fib_αβ : ∀ (m : ℕ), ↑(fib m) * sqrt5 = α^m - β^m :=
-  begin
-  intro m,
-  cases m, refl,
-  rw [α_fib m, β_fib (m+1)],
-  apply ext,
-  {
-    simp,
-    have : (1 + (1 + (m : ℤ))) = ↑(m+1+1), simp,
-    rw [this, fib_down (m+2), fib_down m],
-    apply eq_add_of_add_neg_eq, rw [← eq_neg_add_iff_add_eq],
-    simp, rw [← int.coe_nat_add, int.coe_nat_eq_coe_nat_iff],
-    refl,
-  },
-  {
-    simp,
-    have : Fib (1 + ↑m) = ↑(fib (m + 1)),
-      {
-        show Fib (↑1 + ↑m) = fib (m + 1),
-        rw [← @int.coe_nat_add 1 m, add_comm, fib_down (m+1)]
-      },
-    rw [this, mul_two],
-  },
-  end
+local notation `α` := Zalpha.units.α
+local notation `β` := Zalpha.units.β
 
-theorem luc_αβ : ∀ (m : ℕ), ↑(luc m) = α^m + β^m :=
-  begin
-  intro m,
-  cases m, refl,
-  rw [α_fib m, β_fib (m+1)],
-  apply ext,
-  {
-    simp,
-    have : (1 + (1 + (m : ℤ))) = ↑(m+1+1), simp,
-    rw [this, fib_down (m+2), fib_down m],
-    rw [← int.coe_nat_add, int.coe_nat_eq_coe_nat_iff],
-    show luc (m+1) = fib m + fib (m + 2),
-    induction m using nat.rec_on_two with n h0 h1, refl, refl,
-    simp at h0, simp at h1,
-    unfold1 luc, rw [h0, h1], simp,
-    show
-      fib n + (fib (n + 1) + (fib (n + 2) + fib (n + 3))) =
-      fib (n + 2) + fib (n + 4),
-    rw [← add_assoc], refl,
-  },
-  simp, -- trivial! this is since (α^m).r = -(β^m).r
-  end
+theorem α_Fib (n : ℤ) : (↑(α^n) : ℤα) = ⟨Fib (n-1), Fib n⟩ :=
+int.induction_on n rfl
+  (λ n ih, ext (by simp [gpow_add, ih]) rfl)
+  (λ n ih, ext (by simp [gpow_add, ih];
+    apply sub_eq_of_eq_add;
+    simpa [-add_comm] using Fib_add_two (n-2)) rfl)
+
+theorem β_Fib (n : ℤ) : (↑(β^n) : ℤα) = ⟨Fib (n+1), -Fib n⟩ :=
+int.induction_on n rfl
+  (λ n ih, ext
+    (by simp [gpow_add, ih]; rw [← Fib_add_two n]; refl)
+    (by simp [gpow_add, ih]))
+  (λ n ih, ext
+    (by simp [gpow_add, ih])
+    (by simp [gpow_add, ih];
+      have := Fib_add_two (n-1);
+      rw [bit0, ← add_assoc, sub_add_cancel] at this;
+      simp [this]))
+
+theorem Fib_αβ (m : ℤ) : ↑(Fib m) * sqrt5 = ↑(α^m) - ↑(β^m) :=
+ext (by simp [α_Fib, β_Fib];
+  have := Fib_add_two (m-1);
+  rw [bit0, ← add_assoc, sub_add_cancel] at this;
+  simp [this])
+(by simp [α_Fib, β_Fib, mul_two])
+
+theorem Luc_αβ (m : ℤ) : (↑(Luc m) : ℤα) = ↑(α^m) + ↑(β^m) :=
+ext (by simp [Luc]) (by simp [α_Fib, β_Fib])
