@@ -3,7 +3,7 @@ import point3
 
 -- 2F(m+n) = F(m) L(n) + L(m) F(n)
 lemma two_mul_Fib_add (m n : ℤ) : 2 * Fib (m + n) = Fib m * Luc n + Luc m * Fib n :=
-by rw [Fib, Fib, Fib, Luc, Luc, gpow_add, units.mul_coe, Zalpha.mul_r, two_mul];
+by rw [Fib, Fib, Fib, Luc, Luc, gpow_add, units.coe_mul, Zalpha.mul_r, two_mul];
   rw [α_Fib, α_Fib, β_Fib, β_Fib];
   have Hm := Fib_add_two (m-1);
   have Hn := Fib_add_two (n-1);
@@ -18,7 +18,7 @@ int.coe_nat_inj $ by rw [int.coe_nat_add, int.coe_nat_mul, int.coe_nat_mul, int.
 lemma Luc_four_mul (n : ℤ) : Luc (4 * n) = Luc (2 * n) * Luc (2 * n) - 2 :=
 Zalpha.of_int_inj.1 $ by have := Luc_αβ; simp at this;
   simp [this, add_mul, mul_add];
-  rw [← units.mul_coe, ← units.mul_coe, ← units.mul_coe, ← units.mul_coe];
+  rw [← units.coe_mul, ← units.coe_mul, ← units.coe_mul, ← units.coe_mul];
   rw [← mul_gpow, ← mul_gpow, ← mul_gpow, ← mul_gpow]; simp;
   rw [gpow_mul (-1 : units ℤα)];
   have : (-1 : units ℤα)^(2:ℤ) = 1 := rfl;
