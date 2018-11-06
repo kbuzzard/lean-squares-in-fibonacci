@@ -82,9 +82,9 @@ lemma ord_pow {k : ℕ} {a : ℕ+} : ord p (a^k) = k * ord p a := ord_ppow
 
 -- Gcd
 
-def pgcd (a b : ℕ+) : ℕ+ := ⟨gcd a b, gcd_pos_of_pos_left b a.pos⟩
+/-
 
-#check pnat.coe_nat_coe
+def pgcd (a b : ℕ+) : ℕ+ := ⟨gcd a b, gcd_pos_of_pos_left b a.pos⟩
 
 --set_option pp.notation false
 @[simp] lemma pgcd_coe_something (a b : ℕ) : pgcd a b = gcd a b := begin
@@ -93,6 +93,7 @@ unfold pgcd,
 sorry
 end
 
+--#print notation ℕ∞
 lemma ord_pgcd {a b : ℕ+} : ord p (pgcd a b) = min (ord p a) (ord p b) :=
 exactly_divides_iff_ord.mpr
 (exactly_divides_gcd
@@ -116,8 +117,6 @@ end
 --set_option pp.all true
 --set_option pp.notation false
 
-lemma 
-lemma coe_pgcd_thing (a b : ℕ+) : (pgcd a b).1 =  
 lemma ord_add {a b : ℕ+} : ord p (a + b) ≥ min (ord p a) (ord p b) :=
 begin
   --have H (a b : ℕ+) : gcd a b ∣ (a + b) := sorry,
@@ -168,5 +167,5 @@ end
 #check @nat.dvd_add_iff_left
 
 
-
+-/
 end order
