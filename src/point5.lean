@@ -41,11 +41,12 @@ begin
   suffices H1: 4 * n % 8 = 4,
   rw H1,
   exact dec_trivial,
-  apply (int.modeq.coe_nat_modeq_iff (4*n) 4 8).1,
-  rw int.coe_nat_mul,
-  apply @int.modeq.modeq_mul_left' 2 n 1 4 dec_trivial,
-  apply (int.modeq.coe_nat_modeq_iff n 1 2).2,
-  exact H,
+  have h2 := nat.mod_add_div n 2,
+  rw H at h2,
+  rw [←h2,mul_add,←mul_assoc],
+  show (4 + 8 * _) % 8 = 4,
+  rw nat.add_mul_mod_self_left,
+  exact dec_trivial,
   },
   generalize H: n % 2 = k,
    have q2: k < 2,
@@ -62,8 +63,10 @@ begin
   },
 
 end
+/-
 #check nat.mul_dvd_mul_iff_left
 #check int.coe_nat_dvd
+-/
 --n : ℕ,
 --H : n % 2 = 0
 --⊢ 4 * n % 8 = 0
