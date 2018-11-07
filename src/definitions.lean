@@ -9,9 +9,9 @@ def Fib (n : ℤ) : ℤ := (↑(α^n) : ℤα).r
 @[simp] lemma Fib_one : Fib 1 = 1 := rfl
 @[simp] lemma Fib_add_two (n : ℤ) : Fib (n+2) = Fib n + Fib (n+1) :=
 calc  (↑(α^(n+2)) : ℤα).r
-    = (↑(α^n)*(1+α) : ℤα).r : by rw [gpow_add, units.mul_coe]; refl
+    = (↑(α^n)*(1+α) : ℤα).r : by rw [gpow_add, units.coe_mul]; refl
 ... = (↑(α^n) : ℤα).r + (↑(α^(n+1)) : ℤα).r :
-  by rw [gpow_add, units.mul_coe, mul_add, mul_one]; refl
+  by rw [gpow_add, units.coe_mul, mul_add, mul_one]; refl
 @[simp] lemma Fib_add_one_add_one (n : ℤ) : Fib (n+1+1) = Fib n + Fib (n+1) :=
 by rw [← Fib_add_two, add_assoc]; refl
 
@@ -20,10 +20,10 @@ def Luc (n : ℤ) : ℤ := (↑(α^n) + ↑(β^n) : ℤα).i
 @[simp] lemma Luc_one : Luc 1 = 1 := rfl
 @[simp] lemma Luc_add_two (n : ℤ) : Luc (n+2) = Luc n + Luc (n+1) :=
 calc  (↑(α^(n+2)) + ↑(β^(n+2)) : ℤα).i
-    = (↑(α^n)*(1+α) + ↑(β^n)*(1+β) : ℤα).i : by rw [gpow_add, gpow_add, units.mul_coe, units.mul_coe]; refl
+    = (↑(α^n)*(1+α) + ↑(β^n)*(1+β) : ℤα).i : by rw [gpow_add, gpow_add, units.coe_mul, units.coe_mul]; refl
 ... = (↑(α^n) + ↑(β^n) : ℤα).i + (↑(α^(n+1)) + ↑(β^(n+1)) : ℤα).i :
-  by rw [gpow_add, units.mul_coe, mul_add, mul_one];
-     rw [gpow_add, units.mul_coe, mul_add, mul_one];
+  by rw [gpow_add, units.coe_mul, mul_add, mul_one];
+     rw [gpow_add, units.coe_mul, mul_add, mul_one];
      rw [← Zalpha.add_i, gpow_one, gpow_one]; ac_refl
 
 def fib : ℕ → ℕ

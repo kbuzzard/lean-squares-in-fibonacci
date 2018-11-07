@@ -1,4 +1,5 @@
 import data.nat.prime
+import algebra.order_functions
 
 open nat
 

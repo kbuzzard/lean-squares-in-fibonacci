@@ -82,10 +82,9 @@ lemma ord_pow {k : ℕ} {a : ℕ+} : ord p (a^k) = k * ord p a := ord_ppow
 
 -- Gcd
 
-def pgcd (a b : ℕ+) : ℕ+ := ⟨gcd a b, gcd_pos_of_pos_left b a.pos⟩
+/-
 
-set_option pp.all true
-#check pnat.coe_nat_coe
+def pgcd (a b : ℕ+) : ℕ+ := ⟨gcd a b, gcd_pos_of_pos_left b a.pos⟩
 
 --set_option pp.notation false
 @[simp] lemma pgcd_coe_something (a b : ℕ) : pgcd a b = gcd a b := begin
@@ -168,5 +167,5 @@ end
 #check @nat.dvd_add_iff_left
 
 
-
+-/
 end order

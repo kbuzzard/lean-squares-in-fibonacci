@@ -32,11 +32,12 @@ def irrat_ext_add {x : ℝ} (q : ℚ) : irrational x → irrational (x + q) :=
   begin
   intro h, intro nq, apply exists.elim nq, intro q', simp, intro hadd,
   have : x = q' - q, from eq_sub_of_add_eq hadd,
-  rw this at h, simp at h,
-  rw [← real.of_rat_eq_cast q'] at h,
-  rw [← real.of_rat_eq_cast q] at h,
-  rw [← real.of_rat_neg q, ← real.of_rat_add q'] at h,
-  apply h, apply exists.intro (q' + -q), simp,
+  rw this at h, 
+  have h2 : irrational q,
+    revert h, simp,
+  apply h2,
+  existsi q,
+  refl,
   end
 
 def irrat_ext_mul {x : ℝ} (q : ℚ) : q ≠ 0 → irrational x → irrational (x / q) :=
@@ -45,10 +46,9 @@ def irrat_ext_mul {x : ℝ} (q : ℚ) : q ≠ 0 → irrational x → irrational 
   have qne0' : (↑ q : ℝ) ≠ 0, { simp, exact qne0, },
   have : x = q' * q, from eq.symm ((eq_div_iff_mul_eq _ _ qne0').1 (eq.symm hmul)),
   rw this at h,
-  rw [← real.of_rat_eq_cast q'] at h,
-  rw [← real.of_rat_eq_cast q] at h,
-  rw [← real.of_rat_mul q'] at h,
-  apply h, apply exists.intro (q' * q), simp,
+  apply h,
+  existsi (q' * q),
+  simp,
   end
 
 def irrat_ext_neg {x : ℝ} : irrational x → irrational (-x) :=
@@ -125,9 +125,11 @@ lemma αℝ.linear_independent : ∀ z : ℤα, to_real z = 0 → z = 0 :=
   {
     rw this at h,
     simp at h,
-    rw [← eq_div_iff_mul_eq _ 0 αℝ_ne_zero] at h,
-    simp at h,
-    exact Zalpha.ext this h,
+    cases h,
+      exact Zalpha.ext this h,
+    exfalso,
+    revert h,
+    exact αℝ_ne_zero,
   },
   by_contradiction zine0,
   have zine0' : (↑ z.i : ℝ) ≠ 0, { simp, exact zine0, },

@@ -15,17 +15,17 @@ int.coe_nat_inj $ by rw [int.coe_nat_add, int.coe_nat_mul];
 lemma fib_succ_coprime (m : ℕ) : coprime (fib (m + 1)) (fib m) :=
 nat.rec_on m dec_trivial $ λ n ih,
 show gcd (fib n + fib (n+1)) (fib (n+1)) = 1,
-by rw [nat.gcd_add, gcd_comm, coprime.gcd_eq_one ih]
+by rw [nat.gcd_add, nat.gcd_comm, coprime.gcd_eq_one ih]
 
 lemma gcd_fib_luc_dvd_two (m : ℕ) : gcd (fib m) (luc m) ∣ 2 :=
 nat.cases_on m dec_trivial $ λ n, nat.cases_on n dec_trivial $
 λ n, nat.cases_on n dec_trivial $ λ n,
 show gcd (fib (n+3)) (luc (n+3)) ∣ 2,
-by rw [luc_fib, gcd_comm, add_comm, nat.gcd_add_mul_right];
+by rw [luc_fib, nat.gcd_comm, add_comm, nat.gcd_add_mul_right];
 change gcd (fib n) (fib (n+1) + (fib n + fib (n+1))) ∣ 2;
-rw [gcd_comm, add_left_comm, add_comm, nat.gcd_add, ← mul_two];
+rw [nat.gcd_comm, add_left_comm, add_comm, nat.gcd_add, ← mul_two];
 rw [coprime.gcd_mul_left_cancel 2 (fib_succ_coprime n)];
-apply gcd_dvd_left
+apply nat.gcd_dvd_left
 
 -- Prime trick thanks to Chris and Mario.
 /-- point 4, last part-/
