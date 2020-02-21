@@ -56,10 +56,10 @@ simp,
 exact this2,
 end
 
-theorem one_ne_neg_one_of_odd (p : ℕ) : prime p → p > 2 → ¬ (1 ≡ -1 [ZMOD p]) := sorry 
+theorem one_ne_neg_one_of_odd (p : ℕ) : nat.prime p → p > 2 → ¬ (1 ≡ -1 [ZMOD p]) := sorry 
 -- Can be done immediately with Chris' lemma!
 
-theorem nat.pow_pow_mod (x m p : ℕ) : prime p → (↑x ^ 2) ^ m ≡ ↑x ^ (2 * m) [ZMOD p] := 
+theorem nat.pow_pow_mod (x m p : ℕ) : nat.prime p → (↑x ^ 2) ^ m ≡ ↑x ^ (2 * m) [ZMOD p] := 
 begin
 intro a,
 have this := pow_mul (↑x : ℤ) 2 m, 
@@ -116,7 +116,7 @@ have f : gcd x ↑p = 1,
   have h4 : x ∣ x^2, 
   { have i1 := _root_.pow_two x,
     have i2 : 1 ≤ 2 := dec_trivial,
-    have i3 := pow_dvd_pow x i2,
+    have i3 := nat.pow_dvd_pow x i2,
     simp at i3,
     exact i3,
   },
@@ -142,7 +142,7 @@ have Heyya := Ferlit x p a f,
 have important : p > 2, 
 {
 by_contradiction cont,
-have pri := prime.ge_two a, 
+have pri := prime.two_le a, 
 have prii := le_of_not_gt cont,
 have priii := le_antisymm pri prii,
 have pre := int.modeq.modeq_iff_dvd.1 b,

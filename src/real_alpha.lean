@@ -1,13 +1,10 @@
-import analysis.real tactic.norm_num tactic.ring
+import data.real.basic tactic.norm_num tactic.ring
 
 namespace real 
 noncomputable theory 
 
 def α := (sqrt 5 + 1) / 2
 def β := 1 - α 
-
-#check @sqr_sqrt 
-#check sqrt 
 
 theorem root_5_squared : (sqrt 5) ^ 2 = 5 := 
   by simp [sqr_sqrt,(by norm_num : (0:ℝ) <= 5)]

@@ -1,5 +1,6 @@
 import mathlib_someday
 import tactic.ring
+import data.zsqrtd.basic
 
 -- Z[alpha] where alpha := (1 + sqrt(5))/2, representing the minimal ring
 -- (with addition, subtraction, and multiplication) containing the roots
@@ -18,7 +19,7 @@ namespace Zalpha
 @[simp] theorem eta : ∀ z : ℤα, Zalpha.mk z.i z.r = z
 | ⟨a, b⟩ := rfl
 
-@[extensionality] theorem ext : ∀ {z w : ℤα}, z.i = w.i → z.r = w.r → z = w
+@[ext] theorem ext : ∀ {z w : ℤα}, z.i = w.i → z.r = w.r → z = w
 | ⟨zr, zi⟩ ⟨_, _⟩ rfl rfl := rfl
 
 theorem ext_iff {z w : ℤα} : z = w ↔ z.i = w.i ∧ z.r = w.r :=
@@ -250,6 +251,10 @@ by rw zsqrtd.ext; split; simp [conj, to_Zsqrt5, two_mul]
 
 lemma norm_mul (z w : ℤα) : (z * w).norm = z.norm * w.norm :=
 by simp [norm, add_mul, mul_add]; ring
+
+instance decidable_linear_ordered_comm_ring_Z_sqrt_5 :
+  decidable_linear_ordered_comm_ring ℤ√5 :=
+zsqrtd.decidable_linear_ordered_comm_ring
 
 instance : decidable_linear_ordered_comm_ring ℤα :=
 { le := λ z w, to_Zsqrt5 z ≤ to_Zsqrt5 w,

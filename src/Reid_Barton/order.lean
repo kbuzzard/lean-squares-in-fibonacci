@@ -1,5 +1,5 @@
 import data.nat.prime
-import data.pnat
+import data.pnat.basic
 
 import Reid_Barton.exactly_divides
 
@@ -40,7 +40,7 @@ instance : has_dvd ℕ+ := ⟨λ a b, a.val ∣ b.val⟩
 def 𝓟 := {p : ℕ // prime p}
 notation `PP` := 𝓟
 
-def 𝓟.gt_one (p : 𝓟) : p.val > 1 := p.property.gt_one
+def 𝓟.gt_one (p : 𝓟) : p.val > 1 := p.property.one_lt
 def 𝓟.pos (p : 𝓟) : p.val > 0 := p.property.pos
 
 instance : has_coe 𝓟 ℕ+ := ⟨λ p, ⟨p.val, p.pos⟩⟩
@@ -74,9 +74,12 @@ exactly_divides_iff_ord.mpr
 (exactly_divides_mul p.property
   exactly_divides_ord exactly_divides_ord)
 
-lemma ord_ppow {k : ℕ} {a : ℕ+} : ord p (pnat.pow a k) = k * ord p a :=
-exactly_divides_iff_ord.mpr
-(exactly_divides_pow p.property exactly_divides_ord)
+lemma ord_ppow {k : ℕ} {a : ℕ+} : ord p (a ^ k) = k * ord p a :=
+begin
+  apply exactly_divides_iff_ord.mpr,
+  convert (exactly_divides_pow p.property exactly_divides_ord),
+  simp,
+end
 
 lemma ord_pow {k : ℕ} {a : ℕ+} : ord p (a^k) = k * ord p a := ord_ppow
 

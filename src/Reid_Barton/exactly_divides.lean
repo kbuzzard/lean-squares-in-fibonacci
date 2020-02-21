@@ -20,7 +20,7 @@ begin
   { intros prn i, apply iff.intro,
     { intro pin,
       apply (le_or_gt _ _).resolve_right, intro i_gt_r,
-      exact absurd (dvd_trans (pow_dvd_pow p i_gt_r) pin) prn.right },
+      exact absurd (dvd_trans (nat.pow_dvd_pow p i_gt_r) pin) prn.right },
     { intro i_le_r,
       exact dvd.trans (pow_dvd_pow p i_le_r) (and.left prn) }
     },
@@ -97,18 +97,18 @@ end
 
 -- Multiplicative
 lemma exactly_divides_one (hp : prime p) : p^0 ∣∣ 1 :=
-(exactly_divides_zero (hp.gt_one.trans dec_trivial)).mp (prime.not_dvd_one hp)
+(exactly_divides_zero (lt.trans dec_trivial hp.one_lt)).mp (prime.not_dvd_one hp)
 
 lemma exactly_divides_mul {r s a b : ℕ} (hp : prime p) : p^r ∣∣ a → p^s ∣∣ b → p^(r+s) ∣∣ a*b :=
 begin
   intros pra psb,
-  rw exactly_divides'' (hp.gt_one.trans dec_trivial) at ⊢ pra psb,
+  rw exactly_divides'' (lt.trans dec_trivial hp.one_lt) at ⊢ pra psb,
   rcases pra with ⟨ka, ha1, ha2⟩,
   rcases psb with ⟨kb, hb1, hb2⟩,
   existsi ka * kb, split,
   { exact calc a * b = (p^r * ka) * (p^s * kb)  : by rw [ha1, hb1]
                ...   = (p^r * p^s) * (ka * kb)  : by ac_refl
-               ...   = p^(r+s) * (ka * kb)      : by rw pow_add },
+               ...   = p^(r+s) * (ka * kb)      : by rw nat.pow_add },
   { exact prime.not_dvd_mul hp ha2 hb2 }
 end
 
@@ -129,7 +129,7 @@ begin
   intros pra psb,
   rw exactly_divides' at ⊢ pra psb,
   intro i,
-  exact calc p^i ∣ gcd a b ↔ p^i ∣ a ∧ p^i ∣ b  : dvd_gcd_iff
+  exact calc p^i ∣ gcd a b ↔ p^i ∣ a ∧ p^i ∣ b  : nat.dvd_gcd_iff
              ...           ↔ i ≤ r ∧ i ≤ s      : and_congr (pra i) (psb i)
              ...           ↔ i ≤ min r s        : le_min_iff.symm
 end

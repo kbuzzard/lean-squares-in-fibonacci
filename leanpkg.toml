@@ -1,9 +1,8 @@
 [package]
 name = "lean-squares-in-fibonacci"
 version = "0.1"
-lean_version = "nightly-2018-04-20"
+lean_version = "leanprover-community/lean:3.5.1"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover/mathlib", rev = "89431cf4f01ff0f6b4005f96795a23571258cbf0"}
-
+mathlib = {git = "https://github.com/leanprover/mathlib", rev = "2d6556dd69faddc92baacaf97d6c0fb39a804b19"}

@@ -49,8 +49,8 @@ instance nonsquare_five : zsqrtd.nonsquare 5 :=
   [is_ring_hom f] (i : ℤ) : f i = i :=
 int.induction_on i
   (is_ring_hom.map_zero f)
-  (λ i H, by simp [is_ring_hom.map_add f, is_ring_hom.map_one f, H])
-  (λ i H, by simp [is_ring_hom.map_add f, is_ring_hom.map_neg f, is_ring_hom.map_one f, H])
+  (λ j H, by simp [is_ring_hom.map_add f, is_ring_hom.map_one f, H]; exact H)
+  (λ j H, by simp_rw [int.cast_sub, is_ring_hom.map_sub f, H, int.cast_one, is_ring_hom.map_one f])
 
 @[simp] lemma units.neg_coe {α : Type*} [ring α] (x : units α) : ((-x : units α) : α) = -↑x :=
 rfl
