@@ -25,8 +25,10 @@ Zalpha.of_int_inj.1 $ by have := Luc_αβ; simp at this;
   simp [this]; rw [bit0, add_mul, gpow_add, gpow_add, mul_gpow, mul_gpow]; ring
 
 lemma luc_four_mul (n : ℕ) : luc (4 * n) + 2 = luc (2 * n) * luc (2 * n) :=
-int.coe_nat_inj $ by simp; rw [← luc_down, ← luc_down];
-  change 1 + (1 + Luc (4 * n)) = _; rw [Luc_four_mul]; ring
+int.coe_nat_inj $ begin
+  simp, rw [← luc_down, ← luc_down],
+  change (2 : ℤ) + Luc (4 * n) = _,
+  rw [Luc_four_mul]; ring end
 
 -- F(2n) = F(n) L(n)
 lemma fib_two_mul (n : ℕ) : fib (2 * n) = fib n * luc n :=
