@@ -40,3 +40,17 @@ modulo 16 and other numbers.
 `squares_in_fibonacci` contains a statement of the main theorem.
 
 `pointX` are the proofs of the various points in the pdf.
+
+`point1` needs to be completely redone -- it now follows easily
+from results in mathlib.
+
+`point2` is also now easy; results in `quadratic_reciprocity.lean`
+in mathlib are all we need.
+
+`point3` and `point4` are finished. `point5` and `point6`
+are half-finished. The file `point7` seems to be completely
+unrelated to point 7, and proves that gcd(F_m,F_n)=F_{gcd(m,n)}.
+`point9` just contains the statement of point 9. The other
+points are missing.
+
+
