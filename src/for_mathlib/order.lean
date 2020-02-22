@@ -1,7 +1,7 @@
 import data.nat.prime
 import data.pnat.basic
 
-import Reid_Barton.exactly_divides
+import for_mathlib.exactly_divides
 
 open nat
 
